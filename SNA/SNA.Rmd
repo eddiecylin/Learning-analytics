@@ -1,0 +1,329 @@
+---
+title: 'Social Network Analysis '
+subtitle: "Do students want to work with their best friends?"
+author: "Eddie Lin"
+date: "2018/03/11"
+output:
+  xaringan::moon_reader:
+    css: ["default", "default-fonts", "custom_Xaringan.css"]
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+class: left, top
+background-image: url(images/roadmap.png)
+background-size: 100%
+background-position: 50% 280%
+
+```{r setup, include=FALSE}
+library("knitr")
+knitr::opts_chunk$set(echo = TRUE, eval=TRUE, 
+                     message=FALSE, warning = FALSE,
+                      fig.height=4, fig.width=9, cache = TRUE) 
+options(htmltools.dir.version = FALSE)
+```  
+
+```{r theme-map, include=FALSE}
+theme_simplemap <- function(base_size = 9, base_family = "") {
+  theme_bw(base_size = base_size, base_family = base_family) %+replace%
+    theme(axis.line = element_blank(),
+          axis.text = element_blank(),
+          axis.ticks = element_blank(),
+          axis.title = element_blank(),
+          panel.background = element_blank(),
+          panel.border = element_blank(),
+          panel.grid = element_blank(),
+          panel.spacing = unit(0, "lines"),
+          plot.background = element_blank(),
+          legend.position = "none")
+}
+```  
+
+## Project Description
+
+Using social networks analysis(SNA) to understand the the social dynamic for middle school students. 
+As there seems to be a norm that we should never work with our best friend, I want to know if 
+we can see that life wisdom reflected among middle school students. Specifically, my interested questions
+are as follows: 
+
+1. Is there a pattern when students choose who is their good friend in class?
+
+2. Do students tend to work with their good friends in class? 
+
+3. Other findings such as students of highest popularity, isolated students,etc. 
+---
+
+## Tools & Data
+
+- R
+- R packages: igraph
+- Data source: [_M. Vickers and S. Chan(1981) Representing Classroom Social Structure_](http://networkdata.ics.uci.edu/netdata/html/vc.html)
+---
+
+## Data Description
+
+The data were collected by Vickers & Chan from 29 seventh grade students in a school in Victoria, Australia. 
+Students were asked to nominate their classmates on a number questions:  
+
+1. Who do you get on with in the class? 
+
+2. Who are your best friends in the class?  
+
+3. Who would you prefer to work with?  
+---
+
+## Preliminary Network Analysis
+
+In SNA, there are several methods to compute `centrality` to evaluate who is "important" in a network. However, 
+I will begin by visualizing the networks for all 3 questions without using `centrality measure`. 
+---
+
+## Who do you get on with in class ?
+
+- male students(blue nodes)/ female students(yellow nodes)
+- the edge (line) width is weighed by the total of votes received by a student (node)
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+# import data set 
+DF.GET <- as.data.frame(read.csv("get.on.with.csv"))
+DF.BEST <- as.data.frame(read.csv("best.friends.csv"))
+DF.WORK <- as.data.frame(read.csv("work.with.csv"))
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+library(dplyr)
+library(tidyr)
+library(igraph)
+```
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+DF.GET.EDGE <- DF.GET %>%
+        select(from, to)
+DF.GET.EDGE <- count(DF.GET.EDGE, from, to)
+DF.GET.EDGE <- DF.GET.EDGE %>%
+        group_by(from, to) %>% 
+        summarise(count = sum(n))
+
+DF.GET.VERTEX <- DF.GET %>%
+        select(from, gender.from)
+DF.GET.VERTEX <- unique(DF.GET.VERTEX)
+
+DF.GET.EDGE$from <- as.factor(DF.GET.EDGE$from)
+DF.GET.VERTEX$from <- as.factor(DF.GET.VERTEX$from)
+
+g1 <- graph.data.frame(DF.GET.EDGE, directed=TRUE, vertices=DF.GET.VERTEX)
+
+par(mar=c(0,0,0,0))
+
+plot(g1,layout=layout.fruchterman.reingold, vertex.color=DF.GET.VERTEX$gender.from, edge.width=DF.GET.EDGE$count, edge.arrow.size= 0.5)
+```
+---
+
+## Who is your best friend in class ?
+
+- male students(blue nodes)/ female students(yellow nodes)
+- the edge (line) width is weighed by the total of votes received by a student (node)
+- for this measure, I use "mutual vote", meaning the person a student votes has to vote back to form an mutual edge
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+DF.BEST.EDGE <- DF.BEST %>%
+        select(from, to)
+DF.BEST.EDGE <- count(DF.BEST.EDGE, from, to)
+DF.BEST.EDGE <- DF.BEST.EDGE %>%
+        group_by(from, to) %>% 
+        summarise(count = sum(n))
+
+DF.BEST.VERTEX <- DF.BEST %>%
+        select(from, gender.from)
+DF.BEST.VERTEX <- unique(DF.BEST.VERTEX)
+
+DF.BEST.EDGE$from <- as.factor(DF.BEST.EDGE$from)
+DF.BEST.VERTEX$from <- as.factor(DF.BEST.VERTEX$from)
+# compute mutual edge
+BF <- select(DF.BEST, from, to)
+BF.sort <- t(apply(BF, 1, function(x) sort(x, decreasing=F)))
+BF.sort <- data.frame(BF.sort)
+colnames(BF.sort) <- c('from', 'to')
+BF.sort$from <- as.factor(BF.sort$from)
+BF.sort$to <- as.factor(BF.sort$to)
+#BF.group <- group_by(BF.sort, from, to)
+BF.sort$count <- 1
+
+BF.group <- group_by(BF.sort, from , to)
+BF.group <- summarise(BF.group, total = sum(count))
+BF.group.mutual <- filter(BF.group, total == 2) # 2 means mutual 
+# change total from 2 to 1 so there will be just 1 connection 
+BF.group.mutual$total <- 1
+
+BF.g<- graph.data.frame(BF.group.mutual, directed=FALSE, vertices=DF.BEST.VERTEX)
+
+par(mar=c(0,0,0,0))
+
+plot(BF.g, layout=layout.fruchterman.reingold, vertex.color=DF.BEST.VERTEX$gender.from, edge.width=BF.group.mutual$total, edge.arrow.size= 0.5)
+```
+
+---
+
+## Who do you prefer to work with in class ?
+
+- male students(blue nodes)/ female students(yellow nodes)
+- the edge (line) width is weighed by the total of votes received by a student (node)
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+DF.WORK.EDGE <- DF.WORK %>%
+        select(from, to)
+DF.WORK.EDGE <- count(DF.WORK.EDGE, from, to)
+DF.WORK.EDGE <- DF.WORK.EDGE %>%
+        group_by(from, to) %>% 
+        summarise(count = sum(n))
+
+DF.WORK.VERTEX <- DF.WORK %>%
+        select(from, gender.from)
+DF.WORK.VERTEX <- unique(DF.WORK.VERTEX)
+
+DF.WORK.EDGE$from <- as.factor(DF.WORK.EDGE$from)
+DF.WORK.VERTEX$from <- as.factor(DF.WORK.VERTEX$from)
+
+g3 <- graph.data.frame(DF.WORK.EDGE, directed=TRUE, vertices=DF.WORK.VERTEX)
+
+par(mar=c(0,0,0,0))
+
+plot(g3,layout=layout.fruchterman.reingold, vertex.color=DF.WORK.VERTEX$gender.from, edge.width=DF.WORK.EDGE$count, edge.arrow.size= 0.5, edge.line.length=0.9)
+```
+---
+
+## Findings
+
+- there seems to have different network formations across 3 questons, suggesting students are opinionated differently towards these questions
+- the network of best friend voting is a lot sparse than the other 2 questiosns, because counting only the mutual votes and perhaps more conservative voting due to the nature of that question 
+- the voting results are pretty distinctly divided by gender
+- to answer our research questions and see the networks more clearly, I will use different `centrality` measures to investigate the networks further
+---
+
+## Centrality in SNA
+
+There are different kinds of centrality measure and it depends on the purpose and the question one is to analyze. Here is a useful tutorial video that gives a brief explanation about different centrality measures. In the current project, I will use `degree centrality` and `betweenness centrality` and focus on the **best friend** and **who to prefer to work with** question. 
+---
+
+## Degree centrality: who is your best friend?
+
+- it seems that students **8,11,22,23** are the winners
+- here, the winners mean the students who get the most "**mutual votes**"
+- no surprise, the result is still pretty gender-distinct (w/ 1 exception in the male student group)
+
+```{r echo=FALSE, warning=TRUE}
+df_best_degree_mutual <- graph.data.frame(BF.group.mutual, directed=FALSE, vertices=DF.BEST.VERTEX)
+
+#assign degree centrality to vertex size
+V(df_best_degree_mutual)$vertex_degree <- degree(df_best_degree_mutual, mode = "all")
+#plot degree centrality
+plot(df_best_degree_mutual, vertex.color=c( "red", "blue")[1+(V(df_best_degree_mutual)$gender.from=="male")],
+  layout=layout.fruchterman.reingold, edge.arrow.size=.3, main="Degree Centrality: Best Friend(mutual)", vertex.size = V(df_best_degree_mutual)$vertex_degree *1.8)
+#degree centrality
+order(as.matrix(degree(df_best_degree_mutual, mode="all")))
+```
+---
+
+## Degree centrality: who to prefer to work with?
+
+- studnet **21, 16** are the ones that most people want to work with
+- the result is based on the total of "**received votes**" that one has got
+- so far, we can see that "**most popular students**" do not match "**people I want to work with the most**"
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+df_workwith_degree <- graph.data.frame(DF.WORK.EDGE, directed=TRUE, vertices=DF.WORK.VERTEX)
+
+#assign degree centrality to vertex size
+V(df_workwith_degree)$vertex_degree <-  degree(df_workwith_degree, mode = "in")
+#plot degree centrality
+plot(df_workwith_degree, vertex.color=c( "red", "blue")[1+(V(df_workwith_degree)$gender.from=="male")],
+  layout=layout.fruchterman.reingold, edge.arrow.size=.3, main="Degree Centrality: Who to Prefer to Work With", vertex.size = V(df_workwith_degree)$vertex_degree *1.8)
+#degree centrality
+order(as.matrix(degree(df_workwith_degree, mode="in")))
+```
+---
+
+## Betweeness centrality: the plays as the "bridge" in class?
+
+- unlike `degree centrality` that measures the total of votes (roughly speaking), `betweeness centrality` measures who takes the critical position in the network 
+- we can imagine a person with high `betweeness centrality` is like a very important bridge that lots of people have to go through it to get to others (shortest distance)
+- so it is not so much of "**the popular vote**" but more like "**the gate keeper**" to be the winner of this measure
+---
+
+## Betweeness centrality: who is your best friend?
+
+- studnet **8, 11, 29, 24** are the ones having the highest between centrality in 2 different gender groups
+- this result for male students matches that from using `degree centrality`
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+df_best_betweeness_mutual <- graph.data.frame(BF.group.mutual, directed=FALSE, vertices=DF.BEST.VERTEX)
+
+#assign betweeness centrality to vertex size
+V(df_best_betweeness_mutual)$vertex_between <- betweenness(df_best_betweeness_mutual)
+
+plot(df_best_betweeness_mutual, vertex.color=c( "red", "blue")[1+(V(df_best_betweeness_mutual)$gender.from=="male")],
+  layout=layout.fruchterman.reingold, edge.arrow.size=.3, main="Betweeness Centrality: Best Friend(mutual)", vertex.size = V(df_best_betweeness_mutual)$vertex_between *0.5)
+
+order(as.matrix(betweenness(df_best_betweeness_mutual)))
+```
+---
+
+## Betweeness centrality: who to prefer to work with?
+
+- **11, 19** seem to be the "**bridge**" for students in this class
+- again, this result shows that your best friend may not be the person you want to work with the most
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+df_workwith_betweenness <- graph.data.frame(DF.WORK.EDGE, directed=TRUE, vertices=DF.WORK.VERTEX)
+
+V(df_workwith_betweenness)$vertex_betweenness <- betweenness(df_workwith_betweenness)
+
+plot(df_workwith_betweenness, vertex.color=c( "red", "blue")[1+(V(df_workwith_betweenness)$gender.from=="male")],
+  layout=layout.fruchterman.reingold, edge.arrow.size=.3, main=" Betweenness Centrality: Who to Prefer to Work With", vertex.size = V(df_workwith_betweenness)$vertex_betweenness *0.3)
+
+order(as.matrix(betweenness(df_workwith_betweenness)))
+
+```
+---
+
+## Think beyond the numbers ...
+
+It is great that we've got some results, but it is worth taking a pause to think about what do these actually mean in reality. Now by using `degree` and `betweeness` centrality, it is known that **the person you like is not the person you want to work with**, but why will these two centrality measures give different winners? Or, which centrality measure should we use or should we just use both?
+
+---
+
+## Wait, what are our research questions again ???
+
+- Although there may not be a perfect answer, but if we think about the definitions of **`degree`** and **`betweeness`** centrality, we can assume that using **`degree`** makes more sense in answering the research questions. As the original paper asked the 7th grade students to vote based on different questions, we do care about who get the most votes rather than who is like a bridge in this class
+
+- the **`betweeness`** measure is useful, too. Especially when we want to know who is the gate keeper in a company that lots of messages/ decisions have to go through that person (may not mean that person is a high-level manager). Or in the technical world, if a node of internet network is very essential (when it is down, all down), then that node will have very high betweeness.
+
+- so back in our case, a person that stands on a very important (bridge) spot may not mean the (s)he get the most votes on the 2 questions (though it might in other cases). So I will opt for the result produced by using **`degree centrality`**
+---
+
+## Findings & Summary
+
+- Is there a pattern when students choose who is their good friend in class?
+    - ** Yes, gender seems to be a pretty salient factor that seperates the class, meaning there is no "the best friend" for the whole class, but there are "best friends" for students of two different genders **
+
+- Do students tend to work with their good friends in class? 
+    - **No, they don't. This result seems to fit the norm of "you never find your colleague as your best friend"**
+
+- Other findings such as students of highest popularity, isolated students, opinions leaders, etc. 
+    - ** We can see the most polular students in class, but we can also see there is an isolated student that no one favors him with any vote as best friend (but he votes for others). The class manager may want to see about this student to see how he is doing in class. **
+
+---
+
+## Limitations & Suggestions
+
+No data analytics is perfect, I came up with a few thoughts and make some suggestions in the followings:
+
+1. When students give votes without a standardized limit, this may affect the result of the "best friend" measure. If a student votes for 20 other students while another votes only for 2, then the odds of forming a mutual vote could be affected.
+
+2. The lack of other student data such as past perforamce, test scores, demographics, etc, limits the scope of data analytics. We can further investigate how students bound with each other and how to create better student work group if additional student data is given.
+
+3. There are other useful measures in SNA such as `dyad`, `triad`, `cliques`, and `cutpoint` that can take this or similar research further, but these measure will be more meaningful if we knew more about students' background or if we have a more specific question. For instance, how do we team up students in a group according to their skill levels for collaborative learning. 

@@ -1,0 +1,220 @@
+---
+title: 'K means Clustering'
+subtitle: "Observe change in learning motivation & grouping students"
+author: "Eddie Lin"
+date: "2018/03/17"
+output:
+  xaringan::moon_reader:
+    css: ["default", "default-fonts", "custom_Xaringan.css"]
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+class: left, top
+background-image: url(images/roadmap.png)
+background-size: 100%
+background-position: 50% 280%
+
+```{r setup, include=FALSE}
+library("knitr")
+knitr::opts_chunk$set(echo = TRUE, eval=TRUE, 
+                     message=FALSE, warning = FALSE,
+                      fig.height=4, fig.width=9, cache = TRUE) 
+options(htmltools.dir.version = FALSE)
+```  
+
+```{r theme-map, include=FALSE}
+theme_simplemap <- function(base_size = 9, base_family = "") {
+  theme_bw(base_size = base_size, base_family = base_family) %+replace%
+    theme(axis.line = element_blank(),
+          axis.text = element_blank(),
+          axis.ticks = element_blank(),
+          axis.title = element_blank(),
+          panel.background = element_blank(),
+          panel.border = element_blank(),
+          panel.grid = element_blank(),
+          panel.spacing = unit(0, "lines"),
+          plot.background = element_blank(),
+          legend.position = "none")
+}
+```  
+
+## Project Description
+
+K means is a commonly used technique in statistics and machine learning. It is an efficient way to clustering all data point in our dataset. It is unsupervised despite we have to assign (and try) cluster numbers to achieve an optimal outcome. The logic of K means is to create different cluster of data points, where all data points in a particular cluster will be near each other and not the others in other clusters. In this project, I will use K means  to analyze student motivation and students’ background.
+Major research question include:
+
+1. How do we use K means to categorize students’ learning motivation 
+
+2. How to use K means to group students in a class
+
+---
+
+## Tools & Data
+
+- R
+- R packages: dplyr, tidyr, ggplot2
+- Data source: a self-report class survey containing (1)students' learning motivation throughout 5 weeks' class and (2) students' background info. and preference.
+---
+
+## Data Description
+
+The data set has been anonymized for privacy reason.  Questions are divided into 2 parts: learning motivation & student info. Their specific questions are as follows:
+
+- Part 1: 
+    - how motivated are you about learning in this class this week (week 1~5, 5-points Likert scale)
+- Part 2: 
+    - Q1 : Have you ever owned a cat?  
+    - Q2 : Do you pronounce "gif", with a J (j-iff) or a G (g-iff)?  
+    - Q3 : How many months have you lived in New York City?  
+    - Q4 : How many siblings (brothers/sisters) do you have?  
+    - Q5 : How many times do you play sport each week?  
+    - Q6 : How many miles do you travel from home to school?  
+    - Q7 : Estimate how many of your friends own Android phones  
+    - Q8 : How many movies have you seen in the cinema this year?     
+    - Q9 : How many classes are you taking this semester?  
+    - Q10 : How many states have you visited in the US?  
+    - Q11 : What city/town did you grow up in?  
+    - Q12 : What state/province did you grow up in?  
+    - Q13 : What country did you grow up in?  
+
+--- 
+## Change in Students' learning motivation by cluster
+
+- We will first analyze students' learning motivation and cluster them in 2 groups
+```{r}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+
+K1 <- read.table("Class_Motivation.csv", sep = ",", header = TRUE)
+K2 <- dplyr::select(K1, 2:6)
+K3 <- na.omit(K2) # another way to treat NAs is to imputate, but I chose to remove in this case
+K3 <- scale(K3)
+fit <- kmeans(K3, 2) 
+fit$cluster
+K4 <- data.frame(K3, fit$cluster)
+names(K4) <- c("1", "2", "3", "4", "5", "cluster")
+```
+- The 1st row of numbers indicate student
+- The 2nd row indicates the cluster each student is assigned into
+- This result is based on the overall motivation scores for all 5 weeks 
+---
+
+## Motivation variation throughout the 5 weeks
+
+- Let's plot the motivation scores in the 2 cluster throughout 5 weeks
+
+```{r}
+K5 <- tidyr::gather(K4, "week", "motivation", 1:5)
+K6 <- K5 %>% group_by(week, cluster)
+K6 <- summarise(K6, avg = mean(motivation))
+K6$week <- as.numeric(K6$week)
+K6$cluster <- as.factor(K6$cluster)
+ggplot(K6, aes(week, avg, colour = cluster)) + geom_line() + xlab("Week") + ylab("Average Motivation")
+# see how many people are there in each cluster
+K7 <- dplyr::count(K4, cluster)
+K7
+```
+- It seems that there are high/low motivation clusters
+- Interestingly, the motivation score varies reversely between the 2 clusters
+---
+
+## Try 3 clusters
+
+- It takes a bit of hacking to get the "right" number of clusters in K means
+- This means for some data set, there may not be a correct number of clusters
+- Sometimes cluster number can be inferred based on similar research or some practical experience from the experts
+_ We will take a exploratory step to use **cluster = 3**
+---
+
+## Try 3 clusters
+
+```{r}
+fit.g3 <- kmeans(K3, 3) 
+K4.g3 <- data.frame(K3, fit.g3$cluster)
+names(K4.g3) <- c("1", "2", "3", "4", "5", "cluster") 
+K5.g3 <- tidyr::gather(K4.g3, "week", "motivation", 1:5)
+K6.g3 <- K5.g3 %>% group_by(week, cluster)
+K6.g3 <- summarise(K6.g3, avg = mean(motivation))
+K6.g3$week <- as.numeric(K6.g3$week)
+K6.g3$cluster <- as.factor(K6.g3$cluster)
+ggplot(K6.g3, aes(week, avg, colour = cluster)) + geom_line() + xlab("Week") + ylab("Average Motivation")
+K7.g3 <- dplyr::count(K4.g3, cluster)
+```
+--- 
+
+## Brief summary about students learning motivation 
+
+- Using **cluster =3** may be better to catch more information than using **cluster =2** as it create another group other than high/low motivation across 5 weeks. 
+
+- The (sort of) reverse motivation tendency remains with 3 cluster, but there is variation in motivation in different clusters
+
+```{r echo=FALSE}
+K7.g3
+```
+---
+
+# Clustering based on students' interest & preference
+
+- Another thing we can do with K means in education is to group students based on their responses to questions in a survey
+
+- We will do this with part of the Part 2 survey questions and `recode` the factor features into numeric features
+
+```{r}
+DF1 <- read.table("cluster-class-data.csv", sep = ",", header  = TRUE)
+names(DF1) <- c("studnetID", "ownCat", "jORgif", "monNYC", "numSib", "weekSport", "mileTotc", "numfriendAndroid", "numMovie", "classSemester", "statesVisited", "cityGrow", "stateGrow", "countryGrow" )
+
+DF.ANSWER <- DF1[, 2:11]
+DF.REGION <- DF1 [, 12:14]
+DF.ANSWER$ownCat <- as.character(DF.ANSWER$ownCat)
+
+# transfer facotral variables
+DF.ANSWER$ownCat <- ifelse(DF.ANSWER$ownCat == "Yes" & !is.na(DF.ANSWER$ownCat), 1, 0)
+DF.ANSWER$jORgif <- ifelse(DF.ANSWER$jORgif == "j-iff" & !is.na(DF.ANSWER$jORgif), 1, 2)
+DF.ANSWER <- scale(DF.ANSWER)
+```
+---
+
+## Run K means with 6 clusters
+
+```{r}
+library(cluster)
+set.seed(123456)
+ANSWER.CLUSTERS <- kmeans(DF.ANSWER, 6)
+ANSWER.CLUSTERS$cluster
+ANSWER.FINAL <- data.frame(DF.ANSWER, cluster = ANSWER.CLUSTERS$cluster)
+ANSWER.CLUSTERS$size
+```
+---
+
+## Run K means with 6 clusters
+```{r}
+clusplot(DF.ANSWER, ANSWER.CLUSTERS$cluster,lines = 0, labels =5, color = TRUE, shade = TRUE,plotchar = TRUE,  main = 'Answers Clustering')
+```
+---
+
+## Findings & Summary
+
+- In this project, we use students’ self-report motivation score and their responses about their interests and preference to group them. 
+
+- We found that during the 5 weeks’ class, there is high/ low motivation cluster, as well as, another cluster that is somewhere in between. 
+
+- In practice, we can further investigate the attributes of these different clusters of students. We can also do this by  conducting a focus group/individual interview to know how they felt in each week ‘s class
+
+- We also use a number of interest & preference question to create student group (clusters) that may be useful for group activities.
+
+---
+
+## Limitations & Suggestions
+
+No data analytics is perfect, I came up with a few thoughts and make some suggestions in the followings:
+
+- K means is useful, but the machine clusters people only based on numbers and mean distance. So we shouldn’t be surprised if some grouping is strange is a bit strange in human eyes.
+
+- The number of clusters is less about being precise and takes a bit luck with some theoretical foundation to get if right. It depends on the purpose of data analytics to settle on an optimal point where clustering result makes the most sense
+
+- K means, like some other algorithms, may be subject to outliers of data points especially when there is a systematic bias. It is useful to visualize data points and think about what to do with outliers before putting them into the algorithm. Also, don’t forget to **scale()** it.
+ 

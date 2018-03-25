@@ -1,0 +1,13 @@
+Drop Out Code Book
+
+student_id = Student ID
+years = Number of years the student has been enrolled in their program of study
+entrance_test_score = Entrance exam test score
+courses_taken = Number of courses a student has taken during their program
+complete = Whether or not a student completed a course or dropped out (yes = completed)
+enroll_data_time = Date and time student enrolled in POSIXct format
+course_id = Course ID
+international = Is the student from overseas
+online = Is the student only taking online courses
+gender = One of five possible gender identities
+

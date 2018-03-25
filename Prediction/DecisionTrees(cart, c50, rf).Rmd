@@ -1,0 +1,354 @@
+---
+title: 'Decision Trees '
+subtitle: "Predict the college course dropouts"
+author: "Eddie Lin"
+date: "2018/03/13"
+output:
+  xaringan::moon_reader:
+    css: ["default", "default-fonts", "custom_Xaringan.css"]
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+class: left, top
+background-image: url(images/roadmap.png)
+background-size: 100%
+background-position: 50% 280%
+
+```{r setup, include=FALSE}
+library("knitr")
+knitr::opts_chunk$set(echo = TRUE, eval=TRUE, 
+                     message=FALSE, warning = FALSE,
+                      fig.height=4, fig.width=9, cache = TRUE) 
+options(htmltools.dir.version = FALSE)
+```  
+
+```{r theme-map, include=FALSE}
+theme_simplemap <- function(base_size = 9, base_family = "") {
+  theme_bw(base_size = base_size, base_family = base_family) %+replace%
+    theme(axis.line = element_blank(),
+          axis.text = element_blank(),
+          axis.ticks = element_blank(),
+          axis.title = element_blank(),
+          panel.background = element_blank(),
+          panel.border = element_blank(),
+          panel.grid = element_blank(),
+          panel.spacing = unit(0, "lines"),
+          plot.background = element_blank(),
+          legend.position = "none")
+}
+```  
+
+## Project Description
+
+College course dropouts could be an administrative and a financial issue for universities. As there may be different reasons that students drop a course, it is useful to see what are the characteristics of the students and the nature of the course that are related to dropouts.
+In this project, I will use 3 different decision tree models to predict college dropouts. Specifically, my interested questions are as follows: 
+
+1. Which tree model works the best in this current case to predict student dropouts?
+
+2. How to increase tree model performance to catch more true dropouts(true posive)? 
+
+3. What are the important features about students that could lead to dropouts? *(though this can also be done w/ logistic regresion)
+---
+
+## Tools & Data
+
+- R
+- R packages: caret, CART, C5.0, RandomForest
+
+ 
+
+---
+
+## Data Description
+
+The data comes from a university registrar's office. The definitions of variables in this data set are as follows:
+
+- **student_id**: Student ID
+- **years**: Number of years the student has been enrolled in their program of study
+- **entrance_test_score**: Entrance exam test score
+- **courses_taken**: Number of courses a student has taken during their program
+- **complete**: Whether or not a student completed a course or dropped out (yes = completed)
+- **enroll_data_time**:  Date and time student enrolled in POSIXct format
+- **course_id**: Course ID
+- **international**: Is the student from overseas
+- **online**: Is the student only taking online courses
+- **gender**: One of five possible gender identities
+
+---
+
+## Data split
+
+We will start by splitting the train and test data. In the current data set, the same students can take multiple courses (multiple rows associated with the same student ID), so we will randomly draw 25% of the students based on their IDs but not the number of rows
+
+```{r warning=FALSE}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+
+set.seed(12345)
+D1 <- as.data.frame(read.csv("drop-out.csv"))
+train <- D1 %>% filter(student_id %in% sample(unique(student_id),ceiling(0.75*length(unique(student_id)))))
+test <- D1[!(D1$student_id %in% train$student_id),]
+D1 <- as.data.frame(read.csv("drop-out.csv"))
+```
+---
+
+## Feature visualization
+
+let's visualize the relatins between features to get a sense of stuff
+
+```{r message=FALSE, warning=FALSE}
+D.viz <- select(D1, complete, years, entrance_test_score, courses_taken, international, online, gender)
+
+pairs(D.viz)
+```
+---
+
+## Feature visualization (continued)
+
+scatterplot is not very useful to see about catagorical or discrete variables as dependent varibale. So I want to seperate the features and into catagorical and continuous features
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+# use other ways to get a sense which demongraphic groups are more likely to complete
+D.discrete <- select(D1, years, courses_taken, complete)
+p1 <- ggplot(D1, aes(years, courses_taken)) + geom_point()
+p1 + facet_grid(. ~ complete)
+
+```
+
+- it seems like the newly-enrolled students are more likely to complete a course
+---
+
+## See if **Entrance_test_score** is any different between not-/ complete students
+
+```{r message=FALSE, warning=FALSE}
+D.continuous <- select(D1, entrance_test_score, complete)
+avg.score <- D.continuous %>% group_by(complete) %>% summarise(avg = mean(entrance_test_score)) %>%
+arrange(avg)
+avg.score
+```
+
+
+- no complete students avg score = 12.4 while complete student is 11.0. Entrance_test_score may not be a valid feature
+---
+
+## Use **prob.table** to see if **international student** is an influential feature
+
+```{r message=FALSE, warning=FALSE}
+D.factoral <- select(D1, international, online, gender)
+print("internatonal")
+
+prop.table(table(D1$international, D1$complete))
+```
+---
+
+## see about **gender** feature
+```{r message=FALSE, warning=FALSE}
+print("gender")
+
+prop.table(table(D1$gender, D1$complete))
+```
+---
+
+## see if how are students only taking online courses doing
+```{r message=FALSE, warning=FALSE}
+print("take online course only")
+
+prop.table(table(D1$online, D1$complete))
+```
+---
+
+## some observations of categorical variables
+
+- non-international students are more likely to complete
+- gender coded as 1 & 2 have better odds to complete
+- those who don't only take online class have better odds to complete
+---
+
+## Why am I doing this so far?
+
+- There may not be a standard way to preprocess the data, but I like to see how each feature works with the target variable just to get a sense  
+
+- For tree models, things get pretty overwhelming to read after features are thrown into a model, so it is useful to see about which could be an important feature at this point
+
+- Yet, as I was plotting individual features against the target variable, this does not exclude issues such collinearity or the influence of outliers, etc.
+---
+
+## Use **CART** tree to train & test a model
+
+```{r warning=FALSE}
+library(caret)
+
+train2 <- train[,c(2:10)] #Remove the student_id variable that we do not want to use in the model
+
+# I also removed the enroll_data_time since it is just time stamp and factorize the gender feature because it makes a more correct sense to me.
+train3 <- train2[,c('years', 'entrance_test_score', 'courses_taken', 'complete', 'course_id', 'international', 'online', 'gender')]
+
+train3$gender <- as.factor(train3$gender)
+
+#Define the control elements we would like to use
+ctrl <- trainControl(method = "repeatedcv", #Tell caret to perform 10-fold cross validation
+                repeats = 3, #Tell caret to repeat each fold three times
+                classProbs = TRUE, #Calculate class probabilities for ROC calculation
+                summaryFunction = twoClassSummary)
+
+#Define the model
+cartFit <- train(complete ~ ., #Define which variable to predict 
+                data = train3, #Define the data set to train the model on
+                trControl = ctrl, #Tell caret the control elements
+                method = "rpart", #Define the model type
+                metric = "ROC", #Tell caret to calculate the ROC curve
+                preProc = c("center", "scale")) #Center and scale the data to minimize the 
+```
+---
+
+## Check the performance of **CART** tree trained model
+```{r}
+cartFit
+```
+---
+                
+## Plot ROC against complexity 
+```{r}
+plot(cartFit)
+```
+---
+
+## About **Sensitivity** and **Specificity**
+
+- Sensitivity(true positive): is the true positive rate also called the recall. It is the number instances from the positive (first) class that actually predicted correctly.
+
+- Specificity(true negative): is also called the true negative rate. Is the number of instances from the negative class (second) class that were actually predicted correctly.
+---
+
+## See **`CART`** model performance on test data
+
+```{r echo= FALSE, warning= FALSE}
+test2 <- test[,c(2:10)] #Remove the student_id variable that we do not want to use in the model
+test3 <- train2[,c('years', 'entrance_test_score', 'courses_taken', 'complete', 'course_id', 'international', 'online', 'gender')]
+test3$gender <- as.factor(test3$gender)
+#Generate prediction using previously trained model
+cartClasses <- predict(cartFit, newdata = test3)
+#Generate model statistics
+confusionMatrix(data = cartClasses, test3$complete) 
+```
+---
+
+## CART tree model performance on new data needs improvement
+
+- The overall accuracy is .90 but the true positive(sensitivity) that represents successful prediction of "no complete" student is not very good(.66). This current tree model is better at predicitng the "complete" students (.995) but not so much so at predicting "no complete" students.We should try some other models to improve this predictive performance.
+---
+
+## Use **C5.0** tree to predict dropout students
+
+- C5.0 is a improved version of C4.5 algorithm by [Kuhn and Johnson (2013)](https://cran.r-project.org/web/packages/C50/vignettes/C5.0.html) 
+
+- C5.0 has some other hyperparameters that we can set in the tree model compared to C4.5. Things like boosting method and the selection of rules and trees methods. 
+
+- While boosting, the tree combines some poor performance features and supply into the whole trees model and iterate to improve the overall perfomance. The rules learning, compared to tree, take advantage of reusing features in the model to split instances till it reaches an optimal point for ROC value.
+
+
+---
+
+## Fit the tree model by using C5.0
+```{r message=FALSE, warning=FALSE}
+library(C50)
+c50Fit <- train(complete ~ ., #Define which variable to predict 
+                data = train3, #Define the data set to train the model on
+                trControl = ctrl, #Tell caret the control elements
+                method = "C5.0", #Define the model type
+                metric = "ROC", #Tell caret to calculate the ROC curve
+                preProc = c("center", "scale")) #Center and scale the data to Check the results
+```
+---
+
+## Check out trained model performance 
+```{r message=FALSE, warning=FALSE}
+c50Fit
+```
+
+## Plot ROC against complexity
+```{r}
+plot(c50Fit)
+```
+---
+
+
+## See about the model performance on the test data
+```{r}
+c50Classes <- predict(c50Fit, test3)
+confusionMatrix(data = c50Classes, test3$complete)
+```
+---
+
+## Use **RandomForest** to train & predict
+
+- Another useful and commonly used algorithm is `RandomForest` (RF)
+- A brief intro. about RF can be found here: [what's RandomForest](https://www.tutorialspoint.com/r/r_random_forest.htm)
+---
+
+## Fit and predict student dropouts with RF
+
+```{r}
+library(randomForest)
+set.seed(1234)
+rfFit <- randomForest(complete ~ .,train3)
+rfClasses <- predict(rfFit, test3)
+confusionMatrix(data=rfClasses, test3$complete)
+```
+- as it shows, there is not dramatic performance improvement w/ RF
+---
+
+## see feature importance w/ randomForest
+
+- With C5.0, we can achieve a similar purpose by checking the percentage(%) that a feature is used
+- (BE CAREFUL!!) If you are using `rules` method in C5.0, please mind that the order of feature percentage does not make the same sense as when we are using `trees` method. (Because features can be reused)
+- According to mean decrease Gini, 'years', 'course_id'(which courses), 'course_taken'(# of course taken) are the 3 most important features. This coincides with top 3 attributes usage given by C5.0 tree.
+```{r}
+varImpPlot(rfFit,type=2)
+```
+---
+
+## Wait, what are our research questions again ???
+
+1. Which tree model works the best in this current case to predict student dropouts?
+
+2. How to increase tree model performance to catch more true dropouts(true posive)? 
+
+3. What are the important features about students that could lead to dropouts? *(though this can also be done w/ logistic regresion)
+---
+
+## Findings & Summary
+
+- In our case, the C5.0 tree works the best as it could catch about 70% of the student dropouts
+
+- There are other methods in C5.0 that we can tune with, such as boosting or using both *rules* and *trees* to try to get a better performance. I also tried another 2 tree models: CART and randomForest, but all of these attempts do not result in better model performance.
+
+- Years of program study, (which) courses , number of courses students have taken seem to be important features to predict students' course dropouts in this case.
+
+- If we put the these results into practical consideration, this could mean that there may be a few courses that which are more challenging to students (?). School administrators could take a look at the nature, level, or the course requirements, etc of those courses.
+
+---
+
+## Limitations & Suggestions 
+
+No data analytics is perfect, I came up with a few thoughts and make some suggestions in the followings:
+
+- Regardless of which tree model, the model perfomance in this project is not close to be perfect
+
+- Perfection is a relative idea and it depends on the area of research. Although our models are not near perfect in predicting new data, we also have to be careful not to overfit it. Sommetimes the reason could be that the data is simply too noisy
+
+- In general, decision trees are resilient to imbalanced data and can handle both categorical and continuous features at the same time pretty well. But each tree algorithm has its pros and cons, when to use what depends on the understanding of the data and trial & error
+---
+
+## Limitations & Suggestions - (continued)
+
+- For student data like this, we can try to aggregate different years of data and continue to tinker our tree model. Arguably, data from several years should be more robust than that from one year of student data. 
+
+- In practice, we can also create a **`cost matrix`** to give different weights to false postive/negative (for non-dropouts we predict dropouts/for the dropouts we predict non-dropouts). A cost matrix can be based on some school resources consideration. For example, if the cost for missing a course dropout (false negative) is 3 times the financial burden than catching a dropout when the student is not (false postive), cost matrix will come in pretty handy.
+
+- We shoud also be careful of the data representativeness. Although there are > 5,000 rows of observations, the data is generated by only 682 students and that may not be a very representitive student body to conclude which student features will lead to dropouts
+
+
