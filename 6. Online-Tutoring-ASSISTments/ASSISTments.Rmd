@@ -1,0 +1,570 @@
+---
+title: "ASSISTments online tutoring user behavior analysis"
+author: "Eddie LIN"
+date: "6/27/2018"
+output: html_document
+---
+## Project goals: 
+#### 1. Identify difference in behavior between high/low- performance users
+#### 2. Investigate key features that distinguish the 2 types of users
+#### 3. Build predictive models to predict outcome of attempting questions
+
+
+### explainaton of features
+[full explaination of column names] (https://sites.google.com/site/assistmentsdata/how-to-interpret) 
+
+`problem_id`:
+The ID of the problem. If a problem has multiple main problems, each multiple main problem will have a different problem_id.
+
+`assistment_id`:
+Similar to problem_id. The ID of a problem one will see in the builder. If a problem has multiple main problems and/or scaffolding, everything relating to one problem is called an assistment and has the same assistment_id. If you see problem logs with the same assistment number, they are multiple main problems(or scaffolding problems) that are part of the same overarching problem.
+
+`original`:
+1 = Main problem
+0 = Scaffolding problem
+If a problem has scaffolding and the student answers incorrectly or asks for the problem to be broken into steps, a new problem will be created called a scaffolding problem. This creates a separate problem log row in the file with the variable original = 0.
+
+`correct`:
+1 = Correct on first attempt
+0 = Incorrect on first attempt, or asked for help
+This column is often the target for prediction. (Minor note: Neil Heffernan notes that while this is true most of the time, we also have Essay questions that teachers can grade.  Neil thinks that if this value is say .25 that means the teacher gave it a 1 our of 4. )
+
+`first_response_time`:
+Time between start time and first student action(asking for hint or entering an answer) (in milliseconds)
+
+`tutor_mode`:
+tutor, test mode, pre-test, or post-test
+
+`answer_type`:
+algebra, choose_1, choose_n, fill_in_1, open_response
+
+`student_class_id`: 
+The ID of the class, the same for all students in the same class.  If you want to heiricharchila liearn modeling you can use this for the class ID.  We can also give you a teacher ID.  You might also want to look at section ID (if its not in here we can give it to you: Korinn).
+
+`hint_total`:
+Number of possible hints on this problem.  We tell you the total number of hints so you can compute something like a % of hints used.  Not all problems have all the same number of hints.
+
+`overlap_time`:
+The time in milliseconds for the student to complete the problem.  Ideally this is meant to be time it took the student to finish the problem.  For instance, if a student spent 10 seconds reading the problem, asked for a hint and spent 3 seconds reading it, and then spent 14 seconds typing in the correct answer, the overlap time would be 27 seconds (expressed in milliseconds.)  
+This field is often computed incorrectly. Many data sets display overlap time the same as the first response time.  You could compute overlap time using other fields, like using the state time of two problems. 
+
+`template_id`:
+The template ID of the ASSISTment. ASSISTments with the same template ID have similar questions.
+
+`first_action`:
+0 = attempt
+1 = hint
+2 = scaffolding
+
+`bottom_hint`:
+1 = The student asked for the bottom out hint
+0 = The student did not ask for the bottom out hint.
+If this is blank it means the student did not ask for a hint.  Remember that for scaffolding questions they can not get a hint.  
+o   The bottom out hint is the last hint for a problem and will generally contain the problem’s answer.
+empty = student clicked on the problem but did nothing else
+
+`opportunity`:
+The number of opportunities the student has to practice on this skill.
+For the skill builder dataset, opportunities for different skills of the same data record are in different rows. This means if a student answers a multi skill question, this record is duplicated several times, and each duplication is tagged with one of the multi skills and the corresponding opportunity count.
+For the non skill builder dataset, opportunities for different skills of the same data record are in the same row, separated with comma.
+
+`opportunity_original`:
+The number of opportunities the student has to practice on this skill counting only original problems.
+For the skill builder dataset, original opportunities for different skills of the same data record are in different rows. This means if a student answers a multi skill question, this record is duplicated several times, and each duplication is tagged with one of the multi skills and the corresponding original opportunity count.For the non skill builder dataset, original opportunities for different skills of the same data record are in the same row, separated with comma.
+
+`first_action`:
+0 = attempt
+1 = hint
+2 = scaffolding
+
+#### install packages
+```{r}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+
+```
+
+#### load dataset
+```{r}
+df1 <- read.csv("skill_building_data_2009to2010.csv")
+```
+#### check dimension of dataset
+```{r}
+dim(df1)
+# df1 has 401756 rows and 30 columns
+```
+
+#### data screening and pre-processing
+```{r}
+str(df1)
+```
+
+#### explore data
+```{r}
+df2 <- df1 %>% select(user_id, assistment_id, problem_id, original, correct, attempt_count,first_action,ms_first_response, overlap_time, hint_count, hint_total, first_action, bottom_hint)
+
+df3 <- df2[complete.cases(df2), ]
+#pairs(df3)
+```
+
+#### use 10% of the sample to examine data & outliers
+```{r}
+# draw a subset sample for data exploration
+set.seed(1234)
+select <- sample(1:nrow(df3), 0.1*nrow(df3), replace = F)
+df_sub <- df3[select, ] # 40175 x 9
+summary(df_sub)
+# remove data points that have negative values in `ms_first_response` & `overlap_time`
+df_sub <- filter(df_sub,ms_first_response >= 0 & overlap_time >=0) 
+# `ms_first_response`, `overlap_time`, `attempt_count` seem to suffer outlier problems.
+# use qqplot to inspect outlier
+library(car)
+qqPlot(df_sub$ms_first_response)
+qqPlot(df_sub$overlap_time)
+qqPlot(df_sub$attempt_count)
+# use the following criteria to filter out outliers
+# (1) first response : <= 280000 ms (4.67 min)
+# (2) count of attempt: <= 20 
+# (3) overlap time: <= 1000000 ms (16.67 min)
+df_sub_clean <- filter(df_sub, ms_first_response <= 280000 & overlap_time <= 1000000 & attempt_count <= 20) # 6518 x 12
+
+qqPlot(df_sub_clean$ms_first_response)
+qqPlot(df_sub_clean$overlap_time)
+qqPlot(df_sub_clean$attempt_count)
+```
+
+#### recode some variables
+```{r}
+df_sub_clean$question_type <- recode(df_sub_clean$original, "1='Main problem';0='Scaffolding problem'")
+df_sub_clean$question_type <- factor(df_sub_clean$question_type, level= c('Main problem','Scaffolding problem'))
+```
+
+#### see relations between selected variables (leveled by question types)
+```{r}
+pairs(df_sub_clean[, 4:12], main = "relations between variables", col = df_sub_clean$question_type, upper.panel = NULL, pch = 16, cex = 0.5)
+par(xpd=TRUE)
+legend("topright", fill = unique(df_sub_clean$question_type), legend = c(levels(df_sub_clean$question_type)))
+# no significant diffferent patterns are observed between 2 question types
+```
+
+Based on users' responses to questions, I performed a k-means to explore users' behavioral patterns
+
+#### k-means on 10% of the data based on question responses
+```{r}
+# length(unique(df_sub_clean$user_id)) # unique user id: 1716 
+library(cluster)
+library(factoextra)
+df_kmeans <- df_sub_clean[order(df_sub_clean$user_id), ]
+df_kmeans <- df_kmeans %>% 
+        select(attempt_count, ms_first_response, overlap_time, hint_count)
+df_kmeans_scaled <- scale(df_kmeans)
+k3 <- kmeans(df_kmeans_scaled, centers = 3, nstart = 30)
+k4 <- kmeans(df_kmeans_scaled, centers = 4, nstart = 30)
+k5 <- kmeans(df_kmeans_scaled, centers = 5, nstart = 30)
+# k3 K-means clustering with 3 clusters of size 989, 1547, 3982
+# k4 K-means clustering with 4 clusters of size 749, 3894, 1510, 365
+# k5 K-means clustering with 5 clusters of sizes 240, 519, 2887, 1374, 1498
+
+p3 <- fviz_cluster(k3, geom = "point",  data = df_kmeans_scaled) + ggtitle("k = 3")
+p4 <- fviz_cluster(k4, geom = "point",  data = df_kmeans_scaled) + ggtitle("k = 4")
+p5 <- fviz_cluster(k5, geom = "point",  data = df_kmeans_scaled) + ggtitle("k = 5")
+
+library(gridExtra)
+grid.arrange(p3, p4, p5, nrow = 3) 
+# initial data viz indicates that k = 3 may be the optimal cluster number. Use elbow method(wss) to verify
+set.seed(123)
+fviz_nbclust(df_kmeans_scaled, kmeans, method = "wss") # 3-4 clusters should be the optimal choice. Here I choose 3 cluster.
+set.seed(1357)
+final <- kmeans(df_kmeans_scaled, 3, nstart = 30)
+#print(final)
+df_kmeans_cluster <- df_kmeans %>%
+        mutate(cluster = final$cluster) %>%
+        group_by(cluster) %>%
+        summarise_all("mean")
+
+# there are generally 3 types of users(based on question responses): 
+# (1) higher attmpt counts x long first response time
+# (2) lower attempt counts x shorter response time x use more hints
+# (3) lower attempt counts x shorter response time x use fewer hints
+
+```
+
+As a single user could attempt multiple questons(many rows of data), I did k-means again but based on "unique" users and individual-based behaviors (but not question response as used previously)
+
+#### associate behavioral patterns with performance
+```{r}
+df_all <- df_sub_clean[order(df_sub_clean$user_id), ]
+df_all <- cbind(df_all, final$cluster)
+# select only the original questions
+df_all_orig_q <- filter(df_all, original == 0)
+# df for correct answers
+df_perf <- df_all_orig_q %>% 
+        select(user_id,correct) %>%
+        group_by(user_id) %>%
+        summarise(avg_score = mean(correct))
+
+# only 1 person has a non-zero value in the `correct` column
+# use the whole df1 to experiment (a total of 4217 `user_id`)
+```
+
+#### df1_perf
+```{r}
+df1_perf <- df1 %>% 
+        select(user_id,correct,original) %>%
+        filter(original == 1) %>%
+        group_by(user_id) %>%
+        summarise(avg_score = mean(correct)) 
+
+# 1st quantile 0.47
+# 3rd quantile 0.8
+```
+
+#### df1_perf_hi_lo after taking 1st & 3rd quantile
+```{r}
+df1_perf_hi_lo <- filter(df1_perf, avg_score >= 0.8 | avg_score <= 0.47) # 2192 unique users
+df1_perf_hi_lo$performance <- recode(df1_perf_hi_lo$avg_score, "lo:0.47='low';0.8:hi='high'")
+df1_perf_hi_lo <- df1_perf_hi_lo[ , c(1,3)] 
+```
+
+#### df1_attempt
+```{r}
+df1_attempt <- df1 %>% 
+        select(user_id, attempt_count, original) %>%
+        filter(original == 1 & attempt_count <= 20) %>%
+        group_by(user_id) %>%
+        summarise(avg_attempt = mean(attempt_count)) 
+```
+
+#### df1_first_res_time
+```{r}
+df1_first_res_time <- df1 %>% 
+        select(user_id, ms_first_response, original) %>%
+        filter(original == 1 & ms_first_response <= 280000) %>%
+        group_by(user_id) %>%
+        summarise(avg_res_time = mean(ms_first_response)) 
+# change mille second into minute
+
+df1_first_res_time$avg_res_time <- df1_first_res_time$avg_res_time*1.67e-5
+```
+
+#### df1_overlap_time
+```{r}
+df1_overlap_time <- df1 %>% 
+        select(user_id, overlap_time, original) %>%
+        filter(original == 1 & overlap_time <= 1000000) %>%
+        group_by(user_id) %>%
+        summarise(avg_overlap_time = mean(overlap_time)) 
+# change mille second into minute
+
+df1_overlap_time$avg_overlap_time <- df1_overlap_time$avg_overlap_time*1.67e-5
+```
+
+#### df1_hint_percentage
+```{r}
+df1_avg_hint <- df1 %>% 
+        select(user_id, hint_count,hint_total, original) %>%
+        filter(original == 1) %>%
+        mutate(hint_used = hint_count) %>%
+        group_by(user_id) %>%
+        summarise(avg_hint_used = mean(hint_used)) 
+
+```
+
+#### re-create a df_composite
+```{r}
+df_composite <- inner_join(df1_perf_hi_lo, df1_attempt, by ='user_id')
+df_composite <- inner_join(df_composite, df1_first_res_time, by ='user_id')
+df_composite <- inner_join(df_composite, df1_overlap_time, by ='user_id' )
+df_composite <- inner_join(df_composite, df1_avg_hint, by ='user_id' )
+
+# total of 2178 unique users 
+```
+
+#### variable relations 
+```{r}
+df_composite$performance <- factor(df_composite$performance, levels = c('low', 'high'))
+pairs(df_composite[, 3:6], main = "relations between variables", col = df_composite$performance, upper.panel = NULL, pch = 16, cex = 0.5)
+par(xpd=TRUE)
+legend("topright", fill = unique(df_composite$performance), legend = c(levels(df_composite$performance)))
+```
+
+#### seperate variables to have a different view
+```{r}
+df_composite_hi <- filter(df_composite, performance == 'high')
+df_composite_lo <- filter(df_composite, performance == 'low')  
+```
+
+```{r eval=FALSE, include=FALSE}
+par(mfrow=c(2,2))
+pairs(df_composite_hi[, 3:6], main = "relations between variables(high performance)", upper.panel = NULL, pch = 16, cex = 0.5)
+pairs(df_composite_lo[, 3:6], main = "relations between variables(low performance)", upper.panel = NULL, pch = 16, cex = 0.5)
+
+```
+
+#### kmeans on 2,178 users (took 1st & 3rd quantile)
+```{r}
+df_kmeans_com <- df_composite[order(df_composite$user_id), ]
+df_kmeans_com <- df_kmeans_com %>% 
+        select(avg_attempt, avg_res_time, avg_overlap_time, avg_hint_used)
+
+df_kmeans_com_scaled <- scale(df_kmeans_com)
+
+k2_com <- kmeans(df_kmeans_com_scaled, centers = 2, nstart = 30)
+k3_com <- kmeans(df_kmeans_com_scaled, centers = 3, nstart = 30)
+k4_com <- kmeans(df_kmeans_com_scaled, centers = 4, nstart = 30)
+
+
+p2_com <- fviz_cluster(k2_com, geom = "point",  data = df_kmeans_com_scaled) + ggtitle("k = 2")
+p3_com <- fviz_cluster(k3_com, geom = "point",  data = df_kmeans_com_scaled) + ggtitle("k = 3")
+p4_com <- fviz_cluster(k4_com, geom = "point",  data = df_kmeans_com_scaled) + ggtitle("k = 4")
+
+library(gridExtra)
+grid.arrange(p2_com, p3_com, p4_com, nrow = 3) 
+# initial data viz indicates that k = 3 may be the optimal cluster number. Use elbow method(wss) to verify
+set.seed(123)
+fviz_nbclust(df_kmeans_com_scaled, kmeans, method = "wss") # 3-4 clusters should be the optimal choice. Here I choose 2 cluster.
+
+set.seed(1357)
+final_com <- kmeans(df_kmeans_com_scaled, 3, nstart = 30)
+print(final_com)
+
+df_kmeans_cluster_com <- df_kmeans_com %>%
+        mutate(cluster = final_com$cluster) %>%
+        group_by(cluster) %>%
+        summarise_all("mean")
+
+df_composite <- cbind(df_composite,cluster = final_com$cluster)
+
+```
+
+#### see patterns between cluster labels and performance labels
+```{r}
+
+t <- select(df_composite, performance, cluster)
+
+t <- t %>%
+        group_by(performance, cluster) %>%
+        summarise(count = n())
+```
+
+### Key behavioral patterns between high/ low-performance users:
+#### low: high attempt, short respond time, use more hints
+#### high: low attempt, short total time, use fewer hints
+
+After identifying behavioral patterns and some distinguishing features, I built
+3 different predictive models below to predict outcome of attempting a question by users(note: these model are trained on question response) 
+
+#### use random forest to see feature importance (based on question reponses but not users)
+```{r}
+df_rf <- select(df1, correct, attempt_count,ms_first_response,overlap_time,hint_count, skill_name, tutor_mode)
+# I used 2 additional features:skill_name, tutor_mode to explore if they will have any influence (to verify the initial results from visualizaton of feature relation)
+df_rf <- df_rf[complete.cases(df_rf), ]
+df_rf$correct <- factor(df_rf$correct)
+```
+
+#### subset 10% of the sample 
+```{r}
+set.seed(123)
+select <- sample(1:nrow(df_rf()), 0.1*nrow(df_rf), replace = FALSE)
+df_rf_sub <- df_rf[select, ]
+rownames(df_rf_sub) <- c(1:nrow(df_rf_sub))
+```
+
+#### initial rf fitting 
+```{r}
+library(randomForest)
+set.seed(1234)
+rfFit <- randomForest(correct ~ ., data = df_rf_sub, ntree = 500)
+print(rfFit)
+
+```
+
+#### tuning rf
+```{r}
+mtry <- tuneRF(df_rf_sub[-1], df_rf_sub$correct, ntreeTry=1501,
+               stepFactor=1.5,improve=0.01, trace=TRUE, plot=TRUE)
+
+best.m <- mtry[mtry[, 2] == min(mtry[, 2]), 1]
+print(mtry)
+print(best.m)
+
+set.seed(42)
+rfFit2 <-randomForest(correct ~., data = df_rf_sub, mtry=best.m, importance=TRUE, ntree=501)
+print(rfFit2)
+
+varImpPlot(rfFit2)
+# feature importance shows that 4 features are of great importance:hint_count, attempt_count, overlap_time, ms_first_response
+```
+
+#### create test set for rf
+```{r}
+df_rf_test <- df_rf[-select, ]
+test_select <- sample(1:nrow(df_rf_test), 0.1*nrow(df_rf_test), replace = FALSE)
+df_rf_test <- df_rf_test[test_select, ] # 36,158 x 7
+```
+
+#### predict with rf 
+```{r}
+library(caret)
+library(ROCR)
+predicted_rf <- predict(rfFit2, newdata = df_rf_test, type = 'prob')
+pred_rf <- prediction(predicted_rf[,2], df_rf_test$correct)
+perf_rf_acc <- performance(pred_rf, measure = "acc")
+perf_rf_auc <- performance(pred_rf, measure = "auc")
+plot(perf_rf_acc) 
+
+ind_rf <-  which.max(slot(perf_rf_acc, "y.values")[[1]])
+acc_rf = slot(perf_rf_acc, "y.values")[[1]][ind_rf]
+cutoff_rf = slot(perf_rf_acc, "x.values")[[1]][ind_rf]
+print(c(accuracy= acc_rf, cutoff = cutoff_rf))
+# accuracy = .94ˇ / AUC = .96 with cutoff = 0.52
+```
+
+#### re-create new train/ test dataset for the other 2 model trainings
+```{r}
+new_train <- df_rf_sub[, 1:5]
+new_test <- df_rf_test[, 1:5]
+```
+
+#### KNN model training
+```{r}
+library(class)
+
+trControl <- trainControl(method  = "cv",
+                          number  = 10)
+
+knnFit <- train(correct ~ attempt_count + ms_first_response + overlap_time + hint_count,
+        preProcess = c('center','scale'),
+        method = "knn",
+        tuneGrid = expand.grid(k = 1:10),
+        trControl  = trControl,
+        metric = "Accuracy",
+        data = new_train)
+knnFit
+plot(knnFit)
+# accuracy: .95 with k=1
+
+# predict test data & ROC
+predicted_knn <- predict(knnFit, new_test, type = 'prob')
+pred_knn <- prediction(predicted_knn[,2], new_test$correct)
+perf_knn_acc <- performance(pred_knn, measure = "acc")
+perf_knn_auc <- performance(pred_knn, measure = "auc")
+plot(perf_knn_acc) 
+```
+
+#### predict new data with kNN and accuracy 
+```{r}
+ind_knn <-  which.max(slot(perf_knn_acc, "y.values")[[1]])
+acc_knn = slot(perf_knn_acc, "y.values")[[1]][ind_knn]
+cutoff_knn = slot(perf_knn_acc, "x.values")[[1]][ind_knn]
+print(c(accuracy= acc_knn, cutoff = cutoff_knn))
+# accuracy =.95 / AUC = .94 with cutoff = .5
+
+```
+
+#### SVM model training
+```{r}
+library(e1071)
+set.seed(123)
+# initial model
+svmFit <- svm(correct ~ attempt_count + ms_first_response + overlap_time + hint_count, data = new_train, kernel = 'radial', cost = 16, gamma =2, scale = TRUE)
+```
+
+#### note: I used cost = 16 and gamma = 2 through hyperparameter tuning below
+```{r eval=FALSE, include=FALSE}
+library(pROC)
+pkgs <- c('foreach', 'doParallel')
+lapply(pkgs, require, character.only = T)
+registerDoParallel(cores = 4)
+x <- paste("attempt_count + ms_first_response + overlap_time + hint_count")
+fml <- as.formula(paste("as.factor(correct) ~ ", x))
+# split data into 10 folds
+set.seed(1357)
+new_train$fold <- caret::createFolds(1:nrow(new_train), k = 10, list = FALSE)
+# set parameters forgrid search 
+cost <- 2^(2:4)
+gamma <- 2^(-1:1)
+parms <- expand.grid(cost = cost, gamma = gamma)
+# loop thru parameter values
+result <- foreach(i = 1:nrow(parms), .combine = rbind) %do% {
+  c <- parms[i, ]$cost
+  g <- parms[i, ]$gamma
+  ### K-FOLD VALIDATION ###
+  out <- foreach(j = 1:max(new_train$fold), .combine = rbind, .inorder = FALSE) %dopar% {
+    tra <- new_train[new_train$fold != j, ]
+    vali <- new_train[new_train$fold == j, ]
+    svmFit <- e1071::svm(fml, data = tra, type = "C-classification", kernel = "radial", cost = c, gamma = g, probability = TRUE)
+    pred <- predict(svmFit, vali, decision.values = TRUE, probability = TRUE)
+    data.frame(y = vali$correct, prob = attributes(pred)$probabilities[, 2])
+  }
+  # svm model performance w/ ROC 
+  roc <- pROC::roc(as.factor(out$y), out$prob) 
+  data.frame(parms[i, ], roc = roc$auc[1])
+}
+```
+
+#### predict new data with SVM and accuracy
+```{r}
+predicted_svm <- predict(svmFit, new_test, type = 'prob')
+df_predicted_svm <-data.frame(predicted_svm) # store predicted results in a df
+df_predicted_svm <- df_predicted_svm$predicted_svm
+df_pre_true_label <- data.frame(cbind(df_predicted_svm = df_predicted_svm, svm_tru_label = new_test$correct))
+
+pred_svm <- prediction(df_pre_true_label$df_predicted_svm, df_pre_true_label$svm_tru_label)
+perf_svm_acc <- performance(pred_svm, measure = "acc")
+perf_svm_auc <- performance(pred_svm, measure = "auc")
+plot(perf_svm_acc)
+
+ind_svm <-  which.max(slot(perf_svm_acc, "y.values")[[1]])
+acc_svm = slot(perf_svm_acc, "y.values")[[1]][ind_svm]
+cutoff_svm = slot(perf_svm_acc, "x.values")[[1]][ind_svm]
+print(c(accuracy= acc_svm, cutoff = cutoff_svm)) 
+# accuracy =.92 / AUC = .89   
+```
+### Brief summary: it seems that `attempt_count` and `hint _count` are the most important features in all 3 predictive model for correct question responses
+
+### #examine model performance on the original dataset(excluding data used previously for training & validating )
+```{r}
+# exclude training and validating data from the original df
+df_predict <- select(df1, c(colnames(new_train)))
+df_predict$correct <- factor(df_predict$correct)
+df_predict <- setdiff(df_predict, new_train)
+df_predict <- setdiff(df_predict, new_test) # 117,275 x 5
+```
+#### random forest
+```{r}
+all_rf <- predict(rfFit2, newdata = df_predict, type = 'response')
+# check model accuracy with confusion matrix
+cmat_rf <- confusionMatrix(all_rf, df_predict$correct)  
+# accuracy = .92 ; kappa: .82
+```
+#### kNN
+```{r}
+all_knn <- predict(knnFit, newdata = df_predict, type = 'raw')
+
+cmat_knn <- confusionMatrix(all_knn, df_predict$correct) 
+# accuracy = .92 ; kappa: .82
+```
+#### SVM
+```{r}
+all_svm <- predict(svmFit, newdata = df_predict, type = 'raw')
+
+cmat_svm <- confusionMatrix(all_svm, df_predict$correct)
+# accuracy = .89 ; kappa: .76
+```
+
+### Model performance summary:
+#### 1.RandomForest & kNN perform similarly(accuracy: 92%)
+#### 2.RandomForest & kNN perform similarly on catching incorrect response (91%)
+#### 3.SVM performs less well overall (accuracy: 89%), and took long time to optimize hyperparameters
+
+## Project summary: 
+#### 1. High/low- performance users distinguished by few/more number of question attempts & hints use
+#### 2. There is no significant difference in response time between the 2 kinds of users 
+#### 3. Number of question attempts & hints use are the 2 most important features to distinguish the 2 types of users
+#### 4.Based on these important features, random forest and kNN can predict near 92% of outcome of question attempting by users
+#### 5. It may be infered that in this system hints may not be very useful for low performance users. The data show that they ask for many more hints and attempt the same queston many more times compared to high performance users.
+
+
+
