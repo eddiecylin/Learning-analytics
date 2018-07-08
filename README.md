@@ -2,6 +2,15 @@
 
 This repository stores several original data analytics/data science projects I've completed. The materials of the a project are store in the same folder. Feel free to use my dataset or code if you find them useful. Also, please let me know if you have feedback, comments, or questions(eddie.lin@tc.columbia.edu). The following are brief descriptions of each project and quick access to each project's write-up in the format of PDF or README.md.
 
+## [User Behavior Analysis of ASSISTments online Tutor System](https://github.com/eddiecylin/data-analytics/blob/master/6.%20Online-Tutoring-ASSISTments/README.md)
+
+Project description: 
+What are the behavioral differences between high- and low-performing students in an online tutoring enviroment? Do those differences determine who is more successful v.s who is not? This project uses a large dataset from collected from the ASSISTments tutor system to investigate these questons. Specifically questions include:
+
+What are the key behavioral features that could distinguish high and low-performance users?
+Using classification predictive models, can we use these key behavioral features to predict the outcome of question attempt?
+Which predictive model performs the best, especially, to predict who's likely to answer a question correctly(true positive)?
+
 ## [Social Networks Analysis: Do students want to work with their best friends?](https://github.com/eddiecylin/data-analytics/blob/master/SNA/SNA_Working_with_Best_Friends%3F.pdf)
 
 Project Description:
