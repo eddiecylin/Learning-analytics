@@ -1,5 +1,5 @@
 ---
-title: "ASSISTments online tutoring user behavior analysis"
+title: "ASSISTments online tutor system user behavior analysis"
 author: "Eddie LIN"
 date: "6/27/2018"
 output: html_document
@@ -357,7 +357,7 @@ After identifying behavioral patterns and some distinguishing features, I built
 
 #### use random forest to see feature importance (based on question reponses but not users)
 ```{r}
-df_rf <- select(df1, correct, attempt_count,ms_first_response,overlap_time,hint_count, skill_name, tutor_mode)
+df_rf <- select(df1, correct, attempt_count,ms_first_response,overlap_time,hint_count, tutor_mode)
 # I used 2 additional features:skill_name, tutor_mode to explore if they will have any influence (to verify the initial results from visualizaton of feature relation)
 df_rf <- df_rf[complete.cases(df_rf), ]
 df_rf$correct <- factor(df_rf$correct)
@@ -366,7 +366,7 @@ df_rf$correct <- factor(df_rf$correct)
 #### subset 10% of the sample 
 ```{r}
 set.seed(123)
-select <- sample(1:nrow(df_rf()), 0.1*nrow(df_rf), replace = FALSE)
+select <- sample(1:nrow(df_rf), 0.1*nrow(df_rf), replace = FALSE)
 df_rf_sub <- df_rf[select, ]
 rownames(df_rf_sub) <- c(1:nrow(df_rf_sub))
 ```
@@ -560,11 +560,11 @@ cmat_svm <- confusionMatrix(all_svm, df_predict$correct)
 #### 3.SVM performs less well overall (accuracy: 89%), and took long time to optimize hyperparameters
 
 ## Project summary: 
-#### 1. High/low- performance users distinguished by few/more number of question attempts & hints use
+#### 1. High/low- performance users are distinguished by few/more number of question attempts & hints use
 #### 2. There is no significant difference in response time between the 2 kinds of users 
 #### 3. Number of question attempts & hints use are the 2 most important features to distinguish the 2 types of users
-#### 4.Based on these important features, random forest and kNN can predict near 92% of outcome of question attempting by users
-#### 5. It may be infered that in this system hints may not be very useful for low performance users. The data show that they ask for many more hints and attempt the same queston many more times compared to high performance users.
+#### 4. Based on these important features, random forest and kNN can predict nearly 92% of outcome when a user attempts a question
+#### 5. While there is no significant difference in average time spent on questions between high- and low-performance users, it could be inferred that high-performance users take time to think and answer questions. On the other hand, low-performance users spend time asking for hints and attempting questions. 
 
 
 
