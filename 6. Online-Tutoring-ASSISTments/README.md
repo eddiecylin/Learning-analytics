@@ -1,6 +1,6 @@
 ##  User behavior analysis of ASSISTments online tutor system
 
-Project description:
+- Project description:
 What are the behavioral differences between high- and low-performing students in an online tutoring enviroment? Do those differences determine who is more successful v.s who is not? This project uses a large dataset from collected from the [ASSISTments tutor system](https://sites.google.com/site/assistmentsdata/home/assistment-2009-2010-data/skill-builder-data-2009-2010) to investigate these questons. Specifically questions include:
 
 1. What are the key behavioral features that could distinguish high and low-performance users?
@@ -75,6 +75,8 @@ par(xpd=TRUE)
 legend("topright", fill = unique(df_sub_clean$question_type), legend = c(levels(df_sub_clean$question_type)))
 # no significant diffferent patterns are observed between 2 question types
 ```
+![scatter-problem](https://github.com/eddiecylin/data-analytics/blob/master/6.%20Online-Tutoring-ASSISTments/scatter-problem.png)
+
 
 Based on users' responses to questions, I performed a k-means to explore users' behavioral patterns
 
@@ -117,6 +119,9 @@ df_kmeans_cluster <- df_kmeans %>%
 # (3) lower attempt counts x shorter response time x use fewer hints
 
 ```
+![cluster-question](https://github.com/eddiecylin/data-analytics/blob/master/6.%20Online-Tutoring-ASSISTments/cluster-question.png)
+![elbow-question](https://github.com/eddiecylin/data-analytics/blob/master/6.%20Online-Tutoring-ASSISTments/elbow-question.png)
+
 As a single user could attempt multiple questons(many rows of data), I did k-means again but based on "unique" users and individual-based behaviors (but not question response as used previously)
 
 #### associate behavioral patterns with performance levels
@@ -214,6 +219,7 @@ pairs(df_composite[, 3:6], main = "relations between variables", col = df_compos
 par(xpd=TRUE)
 legend("topright", fill = unique(df_composite$performance), legend = c(levels(df_composite$performance)))
 ```
+![scatter-performance](https://github.com/eddiecylin/data-analytics/blob/master/6.%20Online-Tutoring-ASSISTments/scatter-performance.png)
 
 #### seperate variables to have a different view
 ```{r}
@@ -263,6 +269,8 @@ df_kmeans_cluster_com <- df_kmeans_com %>%
 df_composite <- cbind(df_composite,cluster = final_com$cluster)
 
 ```
+![cluster-users](https://github.com/eddiecylin/data-analytics/blob/master/6.%20Online-Tutoring-ASSISTments/cluster-users.png)
+![elbow-users](https://github.com/eddiecylin/data-analytics/blob/master/6.%20Online-Tutoring-ASSISTments/elbow-users.png)
 
 #### see patterns between cluster labels and performance labels
 ```{r}
@@ -304,6 +312,8 @@ rfFit <- randomForest(correct ~ ., data = df_rf_sub, ntree = 500)
 print(rfFit)
 
 ```
+![fit-rf](https://github.com/eddiecylin/data-analytics/blob/master/6.%20Online-Tutoring-ASSISTments/fit-rf.png)
+
 #### tuning random forest
 ```{r}
 mtry <- tuneRF(df_rf_sub[-1], df_rf_sub$correct, ntreeTry=1501,
@@ -320,6 +330,8 @@ print(rfFit2)
 varImpPlot(rfFit2)
 # feature importance shows that 4 features are of great importance:hint_count, attempt_count, overlap_time, ms_first_response
 ```
+
+![feature-importance-rf](https://github.com/eddiecylin/data-analytics/blob/master/6.%20Online-Tutoring-ASSISTments/feature-importance-rf.png)
 
 #### create test set for random forest
 ```{r}
@@ -376,6 +388,7 @@ perf_knn_acc <- performance(pred_knn, measure = "acc")
 perf_knn_auc <- performance(pred_knn, measure = "auc")
 plot(perf_knn_acc) 
 ```
+![number-of-neighbor-knn](https://github.com/eddiecylin/data-analytics/blob/master/6.%20Online-Tutoring-ASSISTments/number-of-neighbor-knn.png)
 
 #### predict new data with kNN and accuracy 
 ```{r}
