@@ -1,7 +1,7 @@
 ##  User behavior analysis of ASSISTments online tutor system
 
 - Project description:
-What are the behavioral differences between high- and low-performing students in an online tutoring enviroment? Do those differences determine who is more successful v.s who is not? This project uses a large dataset from collected from the [ASSISTments tutor system](https://sites.google.com/site/assistmentsdata/home/assistment-2009-2010-data/skill-builder-data-2009-2010) to investigate these questons. Specifically questions include:
+What are the behavioral differences between high- and low-performing students in an online tutoring environment? Do those differences determine who is more successful v.s who is not? This project uses a large dataset from collected from the [ASSISTments tutor system](https://sites.google.com/site/assistmentsdata/home/assistment-2009-2010-data/skill-builder-data-2009-2010) to investigate these questions. Specifically questions include:
 
 1. What are the key behavioral features that could distinguish high and low-performance users?
 2. Using classification predictive models, can we use these key behavioral features to predict the outcome of question attempt?
