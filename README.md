@@ -7,9 +7,9 @@ This repository stores several original data analytics/data science projects I'v
 Project description: 
 What are the behavioral differences between high- and low-performing students in an online tutoring enviroment? Do those differences determine who is more successful v.s who is not? This project uses a large dataset from collected from the ASSISTments tutor system to investigate these questons. Specifically questions include:
 
-What are the key behavioral features that could distinguish high and low-performance users?
-Using classification predictive models, can we use these key behavioral features to predict the outcome of question attempt?
-Which predictive model performs the best, especially, to predict who's likely to answer a question correctly(true positive)?
+1. What are the key behavioral features that could distinguish high and low-performance users?
+2. Using classification predictive models, can we use these key behavioral features to predict the outcome of question attempt?
+3. Which predictive model performs the best, especially, to predict who's likely to answer a question correctly(true positive)?
 
 ## [Social Networks Analysis: Do students want to work with their best friends?](https://github.com/eddiecylin/data-analytics/blob/master/SNA/SNA_Working_with_Best_Friends%3F.pdf)
 
