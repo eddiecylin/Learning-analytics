@@ -1,4 +1,4 @@
-# NLP/Text Mining: Analyzing Students' Note-Taking in A Graduate Class
+# NLP/Text Mining: Analyzing Students' Note-Taking Behavior in A Graduate Class
 
 - **Project description**:    
 Using students notes from a graduate-level class that teaches machine learning/data analytics, this project aims to apply NLP/text mining analysis to exploring students' motivation to take notes and the nature of notes per se. This graduate class required students to complete weekly readings and write notes. Students could decide their own pace of writing notes but were encouraged to do so along with weekly class schedule. Students were encouraged to focus on the highlights in the reading materials but not their own reflection or comments. Specific questions probed in this project are:
