@@ -317,7 +317,7 @@ topics(lda.model)
 
 ## Project summary: 
 
-1. Students tended to write more in their notes regarding topics such as Networks or Clustering Analysis but less regarding topic like Principal Component Analysis. The difference could be addressed by examining the difficulty to comprehend the topic via a interview or questionnaire.
+1. Students tended to write more in their notes regarding topics such as Networks or Clustering Analysis but less regarding topic like Principal Component Analysis. The difference could be addressed by examining the difficulty to comprehend the topic via an interview or questionnaire.
 
 2. Students tended to write more in their notes when readings are journal articles or blog posts. Considering the different nature in these readings but their notes length is similar, it is worth looking into if there is a difference between 'copy-&-paste' and 'personal comments/reflection' when students were writing based on these readings.
 
