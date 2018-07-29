@@ -11,6 +11,15 @@ What are the behavioral differences between high- and low-performing students in
 2. Using classification predictive models, can we use these key behavioral features to predict the outcome of question attempt?
 3. Which predictive model performs the best, especially, to predict who's likely to answer a question correctly(true positive)?
 
+## [NLP/Text Mining: Analyzing Students' Note-Taking Behavior in A Graduate Class](https://github.com/eddiecylin/data-analytics/blob/master/7.%20NLP:Text-Mining-Class-Notes/README.md)
+
+Project description:
+Using students notes from a graduate-level class that teaches machine learning/data analytics, this project aims to apply NLP/text mining analysis to exploring students' motivation to take notes and the nature of notes per se. This graduate class required students to complete weekly readings and write notes. Students could decide their own pace of writing notes but were encouraged to do so along with weekly class schedule. Students were encouraged to focus on the highlights in the reading materials but not their own reflection or comments. Specific questions probed in this project are:
+
+1. How weekly taught topics affect student's note-taking behavior?
+2. What is the relation between type of class reading & note-taking?
+3. How does time of submitting notes affect note sentiment & note length?
+
 ## [Social Networks Analysis: Do students want to work with their best friends?](https://github.com/eddiecylin/data-analytics/blob/master/SNA/SNA_Working_with_Best_Friends%3F.pdf)
 
 Project Description:
