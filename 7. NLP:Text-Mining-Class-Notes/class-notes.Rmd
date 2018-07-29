@@ -100,7 +100,7 @@ col=brewer.pal(6,"Dark2")
 wordcloud(corpus, min.freq=100, scale=c(5,2),rot.per = 0.25,
           random.color=T, max.word=45, random.order=F,colors=col)
 
-# like lots of text mining analyses, this is fun to look at but not really telling us much. The words in the text cloud simply replect what is taught in this class.
+# like lots of text mining analyses, this is fun to look at but not really telling us much. The words in the text cloud simply reflect what is taught in this class.
 ```
 
 #### merge `D1_clean` with D2 week-topic 
@@ -199,7 +199,7 @@ p_reading_tp <- plot_ly(DF_reading_type, x = ~avg.wd.length, y = ~reorder(item.t
 p_reading_tp
 
 # (1) Interestingly, students tended to write more when they read journal articles or blog posts
-# (2) As students may increase the length of their notes in the fasion of 'copy-&-paste', it will be worth looking into the nature of notes between different type of readings
+# (2) As students may increase the length of their notes in the fashion of 'copy-&-paste', it will be worth looking into the nature of notes between different type of readings
 # (3) For instance, do students tend to copy-paste when it is a journal article or a book? And do students add more of their personal views in their notes when it is a blog post since there is not much to copy-paste? Especially when factoring in that these 2 types of readings yielded similar note length.
 
 ```
@@ -315,9 +315,9 @@ topics(lda.model)
 
 ## Project summary: 
 
-#### 1. Students tended to write more in their notes regarding topics such as Networks or Clustering Analysis but less regarding topic like Principal Component Analyis. The difference could be addressed by examing the difficulty to comprehend the topic via a interview or questionnaire.
+#### 1. Students tended to write more in their notes regarding topics such as Networks or Clustering Analysis but less regarding topic like Principal Component Analysis. The difference could be addressed by examining the difficulty to comprehend the topic via an interview or questionnaire.
 
 #### 2. Students tended to write more in their notes when readings are journal articles or blog posts. Considering the different nature in these readings but their notes length is similar, it is worth looking into if there is a difference between 'copy-&-paste' and 'personal comments/reflection' when students were writing based on these readings.
 
-#### 3. The submission time does affect note length and note sentiment. Note sentiment and length also correlate differently at different times during the day. However, the relation between 'feeling positve' and 'write more notes' should be further examined with a more rigorous study design though there emerged a tendency as such in this project.
+#### 3. The submission time does affect note length and note sentiment. Note sentiment and length also correlate differently at different times during the day. However, the relation between 'feeling positive' and 'write more notes' should be further examined with a more rigorous study design though there emerged a tendency as such in this project.
 
