@@ -1,11 +1,11 @@
 # NLP/Text Mining: Analyzing Students' Note-Taking in A Graduate Class
 
-- **Project description**: 
+- **Project description**:    
 Using students notes from a graduate-level class that teaches machine learning/data analytics, this project aims to apply NLP/text mining analysis to exploring students' motivation to take notes and the nature of notes per se. This graduate class required students to complete weekly readings and write notes. Students could decide their own pace of writing notes but were encouraged to do so along with weekly class schedule. Students were encouraged to focus on the highlights in the reading materials but not their own reflection or comments. Specific questions probed in this project are:
 
-1. How weekly taught topics affect student's note-taking behavior?
-2. What is the relation between type of class reading & note-taking?
-3. How does time of submitting notes affect note sentiment & note length?
+**1. How weekly taught topics affect student's note-taking behavior?**    
+**2. What is the relation between type of class reading & note-taking?**    
+**3. How does time of submitting notes affect note sentiment & note length?**    
 
 #### laod packages
 ```{r}
@@ -96,7 +96,7 @@ wordcloud(corpus, min.freq=100, scale=c(5,2),rot.per = 0.25,
           random.color=T, max.word=45, random.order=F,colors=col)
 
 ```
-![text-cloud](https://github.com/eddiecylin/data-analytics/blob/master/7.%20NLP:Text-Mining-Class-Notes/Screen%20Shot%202018-07-28%20at%2010.10.31%20PM.png)
+![text-cloud](https://github.com/eddiecylin/data-analytics/blob/master/7.%20NLP:Text-Mining-Class-Notes/text-cloud.png)
 
 - like lots of text mining analyses, this is fun to look at but not really telling us much. The words in the text cloud simply replect what is taught in this class.
 
@@ -155,12 +155,8 @@ p_wd_len <- plot_ly(DF_avg_wd_length, x = ~week_topic, y = ~median.avg, type = '
 
 p_wd_len
 ```
-
-<div>
-    <a href="https://plot.ly/~cyl2138/1/?share_key=lPXGiqMaUJE1KNG6raq6Nm" target="_blank" title="p_wd_len" style="display: block; text-align: center;"><img src="https://plot.ly/~cyl2138/1.png?share_key=lPXGiqMaUJE1KNG6raq6Nm" alt="p_wd_len" style="max-width: 100%;width: 600px;"  width="600" onerror="this.onerror=null;this.src='https://plot.ly/404.png';" /></a>
-    <script data-plotly="cyl2138:1" sharekey-plotly="lPXGiqMaUJE1KNG6raq6Nm" src="https://plot.ly/embed.js" async></script>
-</div>
-
+![bar-chart-week](https://github.com/eddiecylin/data-analytics/blob/master/7.%20NLP:Text-Mining-Class-Notes/bar-chart-week.png)
+![see interactive plot](https://plot.ly/~cyl2138/1/)
 
 - Students tended to write more about the topic of Networks Analysis, and less about Principal Component Analysis. Since the instructor assigned the same number of readings to each taught topic, the difference in note length could result from: (1) difficulty to comprehend the topic, (2) events in the semester schedule(e.g. mid-term week)
 
@@ -201,11 +197,8 @@ p_reading_tp <- plot_ly(DF_reading_type, x = ~avg.wd.length, y = ~reorder(item.t
 p_reading_tp
 
 ```
-
-<div>
-    <a href="https://plot.ly/~cyl2138/3/?share_key=KgxrzUhiEssELuS7j3aKvJ" target="_blank" title="p_reading_tp" style="display: block; text-align: center;"><img src="https://plot.ly/~cyl2138/3.png?share_key=KgxrzUhiEssELuS7j3aKvJ" alt="p_reading_tp" style="max-width: 100%;width: 600px;"  width="600" onerror="this.onerror=null;this.src='https://plot.ly/404.png';" /></a>
-    <script data-plotly="cyl2138:3" sharekey-plotly="KgxrzUhiEssELuS7j3aKvJ" src="https://plot.ly/embed.js" async></script>
-</div>
+![bar-chart-reading](https://github.com/eddiecylin/data-analytics/blob/master/7.%20NLP:Text-Mining-Class-Notes/bar-chart-readings.png)
+![see interactive plot](https://plot.ly/~cyl2138/3/)
 
 1. Interestingly, students tended to write more when they read journal articles or blog posts
 2. As students may increase the length of their notes in the fasion of 'copy-&-paste', it will be worth looking into the nature of notes between different type of readings
@@ -266,10 +259,9 @@ p_sen_len_time <- plot_ly(DF_sen_len_time, x = ~time_of_the_day, y = ~word_count
 p_sen_len_time  
 
 ```
-<div>
-    <a href="https://plot.ly/~cyl2138/5/?share_key=VNBx27UF4F6ES2haFxhlE4" target="_blank" title="p_sen_len_time" style="display: block; text-align: center;"><img src="https://plot.ly/~cyl2138/5.png?share_key=VNBx27UF4F6ES2haFxhlE4" alt="p_sen_len_time" style="max-width: 100%;width: 600px;"  width="600" onerror="this.onerror=null;this.src='https://plot.ly/404.png';" /></a>
-    <script data-plotly="cyl2138:5" sharekey-plotly="VNBx27UF4F6ES2haFxhlE4" src="https://plot.ly/embed.js" async></script>
-</div>
+
+![line-chart-sen](https://github.com/eddiecylin/data-analytics/blob/master/7.%20NLP:Text-Mining-Class-Notes/line-chart-sen.png)
+![see interactive plot](https://plot.ly/~cyl2138/5/)
 
 1. Assuming that students submitted notes right after they wrote it, then students tended to feel positve and write more between 14:00 and 16:00 despite the drop in between. 
 2. At other times during the day (e.g.13:00 or 19:00), students may feel negative but still write quite a bit. 
