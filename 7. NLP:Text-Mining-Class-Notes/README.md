@@ -98,7 +98,7 @@ wordcloud(corpus, min.freq=100, scale=c(5,2),rot.per = 0.25,
 ```
 ![text-cloud](https://github.com/eddiecylin/data-analytics/blob/master/7.%20NLP:Text-Mining-Class-Notes/text-cloud.png)
 
-- like lots of text mining analyses, this is fun to look at but not really telling us much. The words in the text cloud simply replect what is taught in this class.
+- like lots of text mining analyses, this is fun to look at but not really telling us much. The words in the text cloud simply reflect what is taught in this class.
 
 #### merge `D1_clean` with D2 week-topic 
 ```{r}
@@ -201,7 +201,7 @@ p_reading_tp
 see interactive plot:(https://plot.ly/~cyl2138/3/)
 
 1. Interestingly, students tended to write more when they read journal articles or blog posts
-2. As students may increase the length of their notes in the fasion of 'copy-&-paste', it will be worth looking into the nature of notes between different type of readings
+2. As students may increase the length of their notes in the fashion of 'copy-&-paste', it will be worth looking into the nature of notes between different type of readings
 3. For instance, do students tend to copy-paste when it is a journal article or a book? And do students add more of their personal views in their notes when it is a blog post since there is not much to copy-paste? Especially when factoring in that these 2 types of readings yielded similar note length.
 
 ## What's the relation between note sentiment, note length, time of submitting the note in a day?
@@ -263,10 +263,10 @@ p_sen_len_time
 ![line-chart-sen](https://github.com/eddiecylin/data-analytics/blob/master/7.%20NLP:Text-Mining-Class-Notes/line-chart-sen.png)
 see interactive plot:(https://plot.ly/~cyl2138/5/)
 
-1. Assuming that students submitted notes right after they wrote it, then students tended to feel positve and write more between 14:00 and 16:00 despite the drop in between. 
+1. Assuming that students submitted notes right after they wrote it, then students tended to feel positive and write more between 14:00 and 16:00 despite the drop in between. 
 2. At other times during the day (e.g.13:00 or 19:00), students may feel negative but still write quite a bit. 
 3. Yet, these results are exploratory rather than decisive, as the note sentiment may not reflect writers' own sentiment and students could also hold out their notes and submit later when finishing them.
-4. Yet, with a more rigorous research design, this analytical approach may bear potential to explore the best time for users' engagement. Such as deployment of a test for students in education or maybe ask for cutomer reviews in marketing.
+4. Yet, with a more rigorous research design, this analytical approach may bear potential to explore the best time for users' engagement. Such as deployment of a test for students in education or maybe ask for customer reviews in marketing.
 
 ##  LDA topic modeling across student notes(document)
 ```{r}
@@ -317,8 +317,8 @@ topics(lda.model)
 
 ## Project summary: 
 
-1. Students tended to write more in their notes regarding topics such as Networks or Clustering Analysis but less regarding topic like Principal Component Analyis. The difference could be addressed by examing the difficulty to comprehend the topic via a interview or questionnaire.
+1. Students tended to write more in their notes regarding topics such as Networks or Clustering Analysis but less regarding topic like Principal Component Analysis. The difference could be addressed by examining the difficulty to comprehend the topic via a interview or questionnaire.
 
 2. Students tended to write more in their notes when readings are journal articles or blog posts. Considering the different nature in these readings but their notes length is similar, it is worth looking into if there is a difference between 'copy-&-paste' and 'personal comments/reflection' when students were writing based on these readings.
 
-3. The submission time does affect note length and note sentiment. Note sentiment and length also correlate differently at different times during the day. However, the relation between 'feeling positve' and 'write more notes' should be further examined with a more rigorous study design though there emerged a tendency as such in this project.
+3. The submission time does affect note length and note sentiment. Note sentiment and length also correlate differently at different times during the day. However, the relation between 'feeling positive' and 'write more notes' should be further examined with a more rigorous study design though there emerged a tendency as such in this project.
