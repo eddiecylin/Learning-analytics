@@ -156,7 +156,7 @@ p_wd_len <- plot_ly(DF_avg_wd_length, x = ~week_topic, y = ~median.avg, type = '
 p_wd_len
 ```
 ![bar-chart-week](https://github.com/eddiecylin/data-analytics/blob/master/7.%20NLP:Text-Mining-Class-Notes/bar-chart-week.png)
-![see interactive plot](https://plot.ly/~cyl2138/1/)
+see interactive plot: (https://plot.ly/~cyl2138/1/)
 
 - Students tended to write more about the topic of Networks Analysis, and less about Principal Component Analysis. Since the instructor assigned the same number of readings to each taught topic, the difference in note length could result from: (1) difficulty to comprehend the topic, (2) events in the semester schedule(e.g. mid-term week)
 
@@ -198,7 +198,7 @@ p_reading_tp
 
 ```
 ![bar-chart-reading](https://github.com/eddiecylin/data-analytics/blob/master/7.%20NLP:Text-Mining-Class-Notes/bar-chart-readings.png)
-![see interactive plot](https://plot.ly/~cyl2138/3/)
+see interactive plot:(https://plot.ly/~cyl2138/3/)
 
 1. Interestingly, students tended to write more when they read journal articles or blog posts
 2. As students may increase the length of their notes in the fasion of 'copy-&-paste', it will be worth looking into the nature of notes between different type of readings
@@ -261,7 +261,7 @@ p_sen_len_time
 ```
 
 ![line-chart-sen](https://github.com/eddiecylin/data-analytics/blob/master/7.%20NLP:Text-Mining-Class-Notes/line-chart-sen.png)
-![see interactive plot](https://plot.ly/~cyl2138/5/)
+see interactive plot:(https://plot.ly/~cyl2138/5/)
 
 1. Assuming that students submitted notes right after they wrote it, then students tended to feel positve and write more between 14:00 and 16:00 despite the drop in between. 
 2. At other times during the day (e.g.13:00 or 19:00), students may feel negative but still write quite a bit. 
