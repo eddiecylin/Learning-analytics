@@ -79,14 +79,15 @@ p_usr_thrd <- plot_ly(df_usr_thrd, x = ~name, y = ~num_users, type = 'bar', name
 p_usr_thrd
 
 #link_p_usr_thrd = api_create(p_usr_thrd, filename="p_usr_thrd")
-```
+``` 
 -  In general, courses with more users also have more forum posts about assignments, class exercises, lectures, though there are some exceptions among these courses.
 
-## 2. compare number of threads and number of thread views
+#### 2. compare number of threads and number of thread views
 ```{r}
-df_thrd_view <- unique(select(df_course_thread, name, num_threads, num_views)) %>%
+df_thrd_view <- unique(select(df_course_thread, name, num_threads, num_views))%>%
         group_by(name, num_threads) %>%
         summarise(average_thread_views = mean(num_views))
+
 df_thrd_view$average_thread_views <- trunc(df_thrd_view$average_thread_views)
 df_thrd_view$name <- factor(df_thrd_view$name, levels = x_order)
 
@@ -103,7 +104,7 @@ p_thrd_view
 ```
 - As previously mentioned, though courses with more users tend to have more forum posts, the views of other people’s forum posts seem to be consistent across all courses with a ceiling of 500 ~ 600 views.
 
-## 3. investigate user interaction with an ad hoc interaction index: no-to-self forum replies
+#### 3. investigate user interaction with an ad hoc interaction index: no-to-self forum replies
 ```{r}
 # prepare dataframe
 df_usr_inter <- select(df_posts, post_id, course_id, parent_id, order, user_id, user_type, post_time) %>%
@@ -179,7 +180,7 @@ p_peer_inter
 ```
 - By combining two factors: (1) number of non-to-self post replies, and (2) time lapse for post replies, some courses have shown higher user interaction than others ans the difference could be large.
 
-## 4.post by different types of course participants 
+#### 4.post by different types of course participants 
 ```{r}
 df_role <- select(df_posts, course_id, user_type) %>%
         filter(user_type != "Anonymous")
@@ -237,11 +238,11 @@ p_post_by_role <- plot_ly(df_role2_wide, x = ~Community_TA*100, y = ~name , type
 
 p_post_by_role
 
-link_p_post_by_role = api_create(p_post_by_role, filename="p_post_by_role")
+#link_p_post_by_role = api_create(p_post_by_role, filename="p_post_by_role")
 ```
 - Not surprisingly, student users account for the majority of forum posts while community TA, instructors, staff’s participation is also significant in some courses. However, there are courses whose forum posts are made predominantly by student users only.
 
-#### what is the general pattern of post replies to the same original forum post creator(i.e. how and how many replies are given to a perosn who asks a question)?
+#### 5. what is the general pattern of post replies to the same original forum post creator(i.e. how and how many replies are given to a perosn who asks a question)?
 ```{r}
 # figure out which class has the highest total number of forum replies
 df_most <- select(df_inter_merged, post_creator, post_replier, course_id) %>% 
@@ -252,6 +253,7 @@ most <- filter(df_most, df_most$count == max(df_most$count)) #startup-001
 
 ```{r}
 # use startup-001 as an example to see the user interaction through their post and replies to posts
+library(plyr)
 df_inter_grid <- select(df_inter_merged, post_creator, post_replier, course_id) %>%
         filter(course_id == "startup-001")
 # as it is hard to visualize thousands of users in a heatmap in the following, we target users whose post reply is larger than three (>=3) which is above mean. 
