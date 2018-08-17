@@ -2,6 +2,17 @@
 
 This repository stores several original data analytics/data science projects I've completed. The materials of the a project are store in the same folder. Feel free to use my dataset or code if you find them useful. Also, please let me know if you have feedback, comments, or questions(eddie.lin@tc.columbia.edu). The following are brief descriptions of each project and quick access to each project's write-up in the format of PDF or README.md.
 
+## [Coursera Forum Post Analysis: Investigating User Interaction across 28 MOOCs](https://github.com/eddiecylin/data-analytics/blob/master/8.%20Coursera_forum_analysis/README.md)
+
+Project description:        
+This project uses data from discussion threads from of 28 Coursera MOOCs, as well as, focuses on the user interaction revealed by their online activities of forum posts and replies. All of these 28 Coursera MOOCs focus on quantitative knowledge and programing skills including data analytics, machine learning, finance, statistics, etc. This project aims to use exploratory data analysis and data visualization to answer the questions in the following:
+
+1. What is the relation between the number of course users, number of forum posts, and views of forum posts?
+2. Using frequency counts and time lapse for post replies as index for user interaction, which course has the highest/lowest user interaction?
+3. What is the ratio of forum posts by different types of participants across 28 courses?
+4. What is the general pattern of post replies? Does a forum post elicit many replies mostly from a few users (concentrated) or fewer replies but from several users (spread out)?
+
+
 ## [User Behavior Analysis of ASSISTments online Tutor System](https://github.com/eddiecylin/data-analytics/blob/master/6.%20Online-Tutoring-ASSISTments/README.md)
 
 Project description: 
