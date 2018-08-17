@@ -298,10 +298,10 @@ p_heatmap_ptly
 
 ## Project summary: 
 
-#### 1. In general, the number of users in a course correlates positively with the number of forum posts. However, a few exceptions do exist where a course with more users does not necessarily have more posts compared to one with relatively fewer users
+1. In general, the number of users in a course correlates positively with the number of forum posts. However, a few exceptions do exist where a course with more users does not necessarily have more posts compared to one with relatively fewer users
 
-#### 2. Using an ad hoc user interaction index which considers both the frequency counts of forum posts and time lapse before post replies, the course Statistics: Making Sense of Data has the highest interaction score while the course Probabilistic Graphical Models has the lowest user interaction. 
+2. Using an ad hoc user interaction index which considers both the frequency counts of forum posts and time lapse before post replies, the course Statistics: Making Sense of Data has the highest interaction score while the course Probabilistic Graphical Models has the lowest user interaction. 
 
-#### 3. Students account for the majority of forum posts across the 28 courses. However, in courses such as Game Theory and Functional Programing(Scala), we can see significant contribution of forum posts from Community TA. On the other hand, in courses such as Linear and Integer Programing and Nanotechnology the instructor also plays a role regarding forum posts.
+3. Students account for the majority of forum posts across the 28 courses. However, in courses such as Game Theory and Functional Programing(Scala), we can see significant contribution of forum posts from Community TA. On the other hand, in courses such as Linear and Integer Programing and Nanotechnology the instructor also plays a role regarding forum posts.
 
-#### 4. Initial findings suggest that for student users that receive relatively more post replies, those replies come from other various users rather than a few users. In a sense, this means the user interaction through forum posts is more “spread out”. For example, a person who posts a question on the course forum is likely to receive several replies from different users rather than the same or few users for many times.
+4. Initial findings suggest that for student users that receive relatively more post replies, those replies come from other various users rather than a few users. In a sense, this means the user interaction through forum posts is more “spread out”. For example, a person who posts a question on the course forum is likely to receive several replies from different users rather than the same or few users for many times.
