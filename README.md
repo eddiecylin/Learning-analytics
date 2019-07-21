@@ -5,7 +5,7 @@ This repository stores several original data analytics/data science projects I'v
 ## [Coursera Forum Post Analysis: Investigating User Interaction across 28 MOOCs](https://github.com/eddiecylin/data-analytics/blob/master/8.%20Coursera_forum_analysis/README.md)
 
 Project description:        
-This project uses data from discussion threads from of 28 Coursera MOOCs, as well as, focuses on the user interaction revealed by their online activities of forum posts and replies. All of these 28 Coursera MOOCs focus on quantitative knowledge and programing skills including data analytics, machine learning, finance, statistics, etc. This project aims to use exploratory data analysis and data visualization to answer the questions in the following:
+This project uses data from discussion threads from 28 Coursera MOOCs, as well as, focuses on the user interaction revealed by their online activities of forum posts and replies. All of these 28 Coursera MOOCs focus on quantitative knowledge and programing skills including data analytics, machine learning, finance, statistics, etc. This project aims to use exploratory data analysis and data visualization to answer the questions in the following:
 
 1. What is the relation between the number of course users, number of forum posts, and views of forum posts?
 2. Using frequency counts and time lapse for post replies as index for user interaction, which course has the highest/lowest user interaction?
