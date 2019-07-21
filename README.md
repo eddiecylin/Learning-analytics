@@ -16,7 +16,7 @@ This project uses data from discussion threads from 28 Coursera MOOCs, as well a
 ## [User Behavior Analysis of ASSISTments online Tutor System](https://github.com/eddiecylin/data-analytics/blob/master/6.%20Online-Tutoring-ASSISTments/README.md)
 
 Project description:        
-What are the behavioral differences between high- and low-performing students in an online tutoring enviroment? Do those differences determine who is more successful v.s who is not? This project uses a large dataset from collected from the ASSISTments tutor system to investigate these questons. Specifically questions include:
+What are the behavioral differences between high- and low-performing students in an online tutoring enviroment? Do those differences determine who is more successful v.s who is not? This project uses a large dataset from collected from the ASSISTments tutor system to investigate these questions. Specifically questions include:
 
 1. What are the key behavioral features that could distinguish high and low-performance users?
 2. Using classification predictive models, can we use these key behavioral features to predict the outcome of question attempt?
