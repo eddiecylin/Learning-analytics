@@ -34,7 +34,7 @@ Using students notes from a graduate-level class that teaches machine learning/d
 ## [Social Networks Analysis: Do students want to work with their best friends?](https://github.com/eddiecylin/data-analytics/blob/master/SNA/SNA_Working_with_Best_Friends%3F.pdf)
 
 Project Description:        
-Using social networks analysis(SNA) to understand the the social dynamic for middle school students. As there seems to be a norm that we should never work with our best friend, I want to know if we can see that life wisdom reflected among middle school students. Specifically, my interested questions are as follows:
+Using social networks analysis(SNA) to understand the social dynamic for middle school students. As there seems to be a norm that we should never work with our best friend, I want to know if we can see that life wisdom reflected among middle school students. Specifically, my interested questions are as follows:
 
 1. Is there a pattern when students choose who is their good friend in class?
 2. Do students tend to work with their good friends in class?
