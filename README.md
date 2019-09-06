@@ -58,7 +58,7 @@ Q-matrix in education is often used in test design and development. It is an imp
 1. Create a Q-matrix to with self-defined knowledge concepts to measure the validity of a test design
 2. Review the error score of the Q-matrix & suggest ways to revise the test
 
-## [Decision Trees: Predict the college course dropouts](https://github.com/eddiecylin/data-analytics/blob/master/Prediction/DecisonTrees_Predict_Student_Dropout.pdf)
+## [Decision Trees: Predict college course dropouts](https://github.com/eddiecylin/data-analytics/blob/master/Prediction/DecisonTrees_Predict_Student_Dropout.pdf)
 
 Project Description:        
 College course dropouts could be an administrative and a financial issue for universities. As there may be different reasons that students drop a course, it is useful to see what are the characteristics of the students and the nature of the course that are related to dropouts. In this project, I used 3 different decision tree models to predict college dropouts. Specifically, my interested
