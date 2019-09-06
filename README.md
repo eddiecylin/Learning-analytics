@@ -13,7 +13,7 @@ This project uses data from discussion threads from 28 Coursera MOOCs, as well a
 4. What is the general pattern of post replies? Does a forum post elicit many replies mostly from a few users (concentrated) or fewer replies but from several users (spread out)?
 
 
-## [User Behavior Analysis of ASSISTments online Tutor System](https://github.com/eddiecylin/data-analytics/blob/master/6.%20Online-Tutoring-ASSISTments/README.md)
+## [User Behavior Analysis in ASSISTments online Tutor System](https://github.com/eddiecylin/data-analytics/blob/master/6.%20Online-Tutoring-ASSISTments/README.md)
 
 Project description:        
 What are the behavioral differences between high- and low-performing students in an online tutoring enviroment? Do those differences determine who is more successful v.s who is not? This project uses a large dataset from collected from the ASSISTments tutor system to investigate these questions. Specifically questions include:
