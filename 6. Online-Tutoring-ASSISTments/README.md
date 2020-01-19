@@ -496,4 +496,4 @@ cmat_svm <- confusionMatrix(all_svm, df_predict$correct)
 2. There is no significant difference in response time between the 2 kinds of users 
 3. Number of question attempts & hints use are the 2 most important features to distinguish the 2 types of users
 4. Using 4 selected features(number of attempts, number of used hints, response time, total time spent on a question), random forest and kNN models in this project can predict nearly 92% of outcome when a user attempts a question
-5. While there is no significant difference in average time spent on questions between high- and low-performance users, it could be inferred that high-performance users take time to think and answer questions. On the other hand, low-performance users spend time asking for hints and attempting questions.
+5. Low-performance users use longer total question response time on average, it could be inferred that high-performance users take time to think and answer questions. On the other hand, low-performance users spend time asking for hints and attempting questions.
